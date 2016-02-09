@@ -45,7 +45,8 @@
      bool Command(const std::string& cmd);
      
  private:
-     Histogram2Dp m_back, m_front, m_e_de_strip[8], m_e_de, m_e_de_thick, m_e_de_fiss, m_e_de_nofiss, m_e_de_fiss_nobg, m_e_de_fiss_bg;
+     Histogram2Dp m_back, m_front, m_e_de_strip[8], m_e_de, m_e_de_thick, 
+                  m_e_de_fiss, m_e_de_nofiss, m_e_de_fiss_promptFiss, m_e_de_fiss_bg;
  
  #if defined(MAKE_INDIVIDUAL_E_DE_PLOTS) && (MAKE_INDIVIDUAL_E_DE_PLOTS>0)
      //8x8 arrays because of the 8 front x 8 backdetectors of SiRi
@@ -58,16 +59,16 @@
     //m_nai_e er matrise med gammaenergi på x-aksen og NaI-detektornummer på y-aksen
      Histogram2Dp m_alfna, m_alfna_bg;
     //ALFNA og ALFNABAKGRUNN defineres
-     Histogram2Dp m_alfna_bg_nofiss, m_alfna_bg_fiss, m_alfna_fiss, m_alfna_nofiss;
+     Histogram2Dp m_alfna_bg_nofiss, m_alfna_bg_fiss_promptFiss, m_alfna_fiss_promptFiss, m_alfna_nofiss;
      Histogram1Dp h_na_n, h_thick, h_ede, h_ede_r[8], h_ex_r[8], h_de_n, h_e_n;
-     Histogram1Dp h_ex, h_ex_fiss;
+     Histogram1Dp h_ex, h_ex_fiss_promptFiss;
    
  #if defined(MAKE_CACTUS_TIME_ENERGY_PLOTS) && (MAKE_CACTUS_TIME_ENERGY_PLOTS>0)
      Histogram2Dp m_nai_e_t[28], m_nai_e_t_all, m_nai_e_t_c,         // CACTUS_Time_Energy_Plots
                   m_siri_e_t[8], m_siri_e_t_all, m_siri_e_t_c,       // SIRI_Time_Energy_Plots
                   m_ppac_e_t[4], m_ppac_e_t_all, m_ppac_e_t_c;      // PPAC_Time_Energy_Plots     
                   // make the same plots but gate on fission / background during fission, etc.
-     Histogram2Dp /* m_nai_e_t_fiss[28],*/ m_nai_e_t_all_fiss, m_nai_e_t_c_fiss, 
+     Histogram2Dp /* m_nai_e_t_fiss[28],*/ m_nai_e_t_all_fiss_promptFiss, m_nai_e_t_c_fiss_promptFiss, 
                   /* m_nai_e_t_fiss_bg[28],*/ m_nai_e_t_all_fiss_bg, m_nai_e_t_c_fiss_bg;
  #endif /* MAKE_CACTUS_TIME_ENERGY_PLOTS */
 
@@ -194,15 +195,15 @@ bool UserXY::Command(const std::string& cmd)
      m_e_de = Mat( "m_e_de", "#DeltaE : E for all detectors together",
                    500, 0, max_e, "E(Si) [keV]", 500, 0, max_de, "#DeltaE(Si) [keV]" );
 
-     m_e_de_fiss = Mat( "m_e_de_fiss", "#DeltaE : E in coincidence with fission",
-                         500, 0, max_e, "E(Si) [keV]", 500, 0, max_de, "#DeltaE(Si) [keV]" );
+     //m_e_de_fiss = Mat( "m_e_de_fiss", "#DeltaE : E in coincidence with fission",
+     //                   500, 0, max_e, "E(Si) [keV]", 500, 0, max_de, "#DeltaE(Si) [keV]" );
      m_e_de_nofiss = Mat( "m_e_de_nofiss", "#DeltaE : E veto for fission",
                          500, 0, max_e, "E(Si) [keV]", 500, 0, max_de, "#DeltaE(Si) [keV]" );
      m_e_de_thick = Mat( "m_e_de_thick", "#DeltaE : E for all detectors together, gated on thickness",
                          500, 0, max_e, "E(Si) [keV]", 500, 0, max_de, "#DeltaE(Si) [keV]" );
      m_e_de_fiss_bg = Mat( "m_e_de_fiss_bg", "#DeltaE : E in coincidence with fission, background",
                          500, 0, max_e, "E(Si) [keV]", 500, 0, max_de, "#DeltaE(Si) [keV]" );
-     m_e_de_fiss_nobg = Mat( "m_e_de_fiss_nobg", "#DeltaE : E in coincidence with fission, w/o bg",
+     m_e_de_fiss_promptFiss = Mat( "m_e_de_fiss_promptFiss", "#DeltaE : E in coincidence with fission, w/o bg",
                          500, 0, max_e, "E(Si) [keV]", 500, 0, max_de, "#DeltaE(Si) [keV]" );
      
      // [a.u.], becuase it's timing bins, not ns
@@ -212,13 +213,13 @@ bool UserXY::Command(const std::string& cmd)
 
      m_alfna =      Mat( "m_alfna", "E(NaI) : E_{x}",
                         2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
-     m_alfna_fiss = Mat( "m_alfna_fiss", "E(NaI) : E_{x} in coincidence with fission",
+     m_alfna_fiss_promptFiss = Mat( "m_alfna_fiss_promptFiss", "E(NaI) : E_{x} in coincidence with fission",
                         2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
      m_alfna_nofiss = Mat( "m_alfna_nofiss", "E(NaI) : E_{x} veto for fission",
                          2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
      m_alfna_bg =   Mat( "m_alfna_bg", "E(NaI) : E_{x} background",
                    		 2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
-     m_alfna_bg_fiss = Mat( "m_alfna_bg_fiss", "E(NaI) : E_{x} background with fission",
+     m_alfna_bg_fiss_promptFiss = Mat( "m_alfna_bg_fiss_promptFiss", "E(NaI) : E_{x} background with fission",
                    2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
      m_alfna_bg_nofiss = Mat( "m_alfna_bg_nofiss", "E(NaI) : E_{x} background without fission",
                       2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
@@ -243,7 +244,7 @@ bool UserXY::Command(const std::string& cmd)
 
      h_ede = Spec("h_ede", "E+#DeltaE all detectors", 2000, 0, max_e, "E+#DeltaE [keV]");
      h_ex  = Spec("h_ex", "E_{x} all detectors", 2000, -2000, 14000, "E_{x} [keV]");
-     h_ex_fiss  = Spec("h_ex_fiss", "E_{x} all detectors, in coincidence with fission", 2000, -2000, 14000, "E_{x} [keV]");
+     h_ex_fiss_promptFiss  = Spec("h_ex_fiss_promptFiss", "E_{x} all detectors, in coincidence with fission", 2000, -2000, 14000, "E_{x} [keV]");
 
  #if defined(MAKE_CACTUS_TIME_ENERGY_PLOTS) && (MAKE_CACTUS_TIME_ENERGY_PLOTS>0)
      // maximum energy of the gammadetectors (x axis) is 12000 keV
@@ -264,9 +265,9 @@ bool UserXY::Command(const std::string& cmd)
                          500, 0, max_enai, "E(NaI) [keV]", 500, 0, 500, "t(NaI) [a.u.]" );
      m_nai_e_t_c   = Mat( "m_nai_e_t_c", "t : E NaI all together, corrected",
                           500, 0, max_enai, "E(NaI) [keV]", 500, 0, 500, "t(NaI) [a.u.]" );
-     m_nai_e_t_all_fiss = Mat( "m_nai_e_t_fiss_all", "t : E NaI all together",
+     m_nai_e_t_all_fiss_promptFiss = Mat( "m_nai_e_t_fiss_promptFiss_all", "t : E NaI all together",
                           500, 0, max_enai, "E(NaI) [keV]", 500, 0, 500, "t(NaI) [a.u.], PPAC coincidence" );
-     m_nai_e_t_c_fiss   = Mat( "m_nai_e_t_c_fiss", "t : E NaI all together, corr, PPAC coincidence",
+     m_nai_e_t_c_fiss_promptFiss   = Mat( "m_nai_e_t_c_fiss_promptFiss", "t : E NaI all together, corr, PPAC coincidence",
                           500, 0, max_enai, "E(NaI) [keV]", 500, 0, 500, "t(NaI) [a.u.]" );
      m_nai_e_t_all_fiss_bg = Mat( "m_nai_e_t_fiss_bg_all", "t : E NaI all together, bg.",
                           500, 0, max_enai, "E(NaI) [keV]", 500, 0, 500, "t(NaI) [a.u.], PPAC coincidence" );
@@ -569,7 +570,10 @@ bool UserXY::Sort(const Event& event)
      if( fiss==0 ) m_e_de_nofiss->Fill( e_int, de_int );
      
      //E-dE matrix only in case of fission
-     if( fiss==1 ) m_e_de_fiss->Fill( e_int, de_int );
+     if( fiss==1 ) m_e_de_fiss_promptFiss->Fill( e_int, de_int );
+
+     //E-dE matrix only in case of fission; background
+     if( fiss==2 ) m_e_de_fiss_bg->Fill( e_int, de_int );
     
 //****************************************************************************************************  
      
@@ -611,7 +615,7 @@ bool UserXY::Sort(const Event& event)
      
      //particle spectrum in coinicidence with fission
      if (fiss==1) {
-     h_ex_fiss->Fill( ex_int );
+     h_ex_fiss_promptFiss->Fill( ex_int );
      }
      
      // ..................................................
@@ -669,8 +673,8 @@ bool UserXY::Sort(const Event& event)
         
         if ( id!=4 && id!=12 && id!=30 && id!=31 && fiss==1) {   
         // m_nai_e_t_fiss[id] ->Fill( na_e_int,  na_t_int );
-        m_nai_e_t_all_fiss ->Fill( na_e_int,  na_t_int );
-        m_nai_e_t_c_fiss   ->Fill( na_e_int,  na_t_c );
+        m_nai_e_t_all_fiss_promptFiss ->Fill( na_e_int,  na_t_int );
+        m_nai_e_t_c_fiss_promptFiss   ->Fill( na_e_int,  na_t_c );
         }
 
         if ( id!=4 && id!=12 && id!=30 && id!=31 && fiss==2) {   
@@ -717,11 +721,11 @@ bool UserXY::Sort(const Event& event)
  
          //Particle-gamma matrix only in case of fission
         if( id!=4 && id!=12 && id!=30 && id!=31 && fiss==1 && na_t_c>190 && na_t_c<220 ) {
-             m_alfna_fiss->Fill( na_e_int, ex_int, 1);
+             m_alfna_fiss_promptFiss->Fill( na_e_int, ex_int, 1);
         } 
         else if( id!=4 && id!=12 && id!=30 && id!=31  && fiss==1 && na_t_c>300 && na_t_c<330 ) {
-            m_alfna_fiss->Fill( na_e_int, ex_int, -1); // currently: "-1"-> Should be adopted to real efficiency!
-             m_alfna_bg_fiss->Fill( na_e_int, ex_int );
+             m_alfna_fiss_promptFiss->Fill( na_e_int, ex_int, -1); // currently: "-1"-> Should be adopted to real efficiency!
+             m_alfna_bg_fiss_promptFiss->Fill( na_e_int, ex_int );
          }
  //****************************************************************************************************
     
