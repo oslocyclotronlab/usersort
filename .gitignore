@@ -1,0 +1,12 @@
+# Ignore everything
+*
+
+# But not these files...
+!.gitignore
+!user_sort*
+!*.batch
+!gainshift*
+# etc...
+
+# ...even if they are in subdirectories
+# !*/

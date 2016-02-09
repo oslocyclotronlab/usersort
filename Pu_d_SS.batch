@@ -1,0 +1,161 @@
+# where to load the gainshifts from; one can also use:
+#   parameter gain_e = ...
+# and so on
+gain file gainshifts_plain.dat
+# gain file gainshifts_Sun_deutron.dat
+
+# cactus energy correction parameters for cactus time
+parameter tnai_corr_enai = 16.4911 11834.5 -293.186 -0.00218471
+
+# siri energy correction parameters for cactus time
+parameter tnai_corr_esi  =  0 1 0 0
+
+# Parameters for the range curve, 3He or alpha
+#rangefile zrange_he3.dat
+#rangefile zrange_a.dat
+#rangefile zrange_d.dat
+rangefile zrange_p.dat
+
+# Cut of low-energy events by making a rectangle which is excluded
+# in the down, left corner of the banana. 
+# Contains E-minimum 1, DE-minimum 1, E-minimum 2, DE-minimum 2.
+# Including Z=1 particles:
+parameter ede_rect  = 500 250 30 500
+# Excluding Z=1 particles:
+#parameter ede_rect  = 500 2500 2000 2500
+
+# Thickness gate 
+#parameter thick_range = 82 12 0
+#parameter thick_range = 125 15 0
+parameter thick_range = 276 75 0
+
+# Thickness gate for 3He banana 
+#parameter thick_range = 48 8 0
+
+# Thickness gate for alpha banana
+#parameter thick_range = 165 10 0
+#parameter thick_range = 48 5 0
+
+# Fit of rkinz column 1 as function of rkinz column 6
+#  233U(d,p)
+parameter ex_from_ede    = 16223 -0.95505 -0.0000016519 \
+   16214 -0.95391 -0.0000016838 \
+   16205 -0.95262 -0.0000017201 \
+   16193 -0.95118 -0.0000017614 \
+   16180 -0.94956 -0.0000018081 \
+   16165 -0.94774 -0.0000018609 \
+   16148 -0.94570 -0.0000019206 \
+   16128 -0.94341 -0.0000019881
+
+# empirical excitation energy correction for the above, e.g. from known peaks
+parameter ex_corr_exp    =  0 1 \
+    0 1 \
+    0 1 \
+    0 1 \
+    0 1 \
+    0 1 \
+    0 1 \
+    0 1
+
+#data directory Datafiles
+data directory ../239Pu/datafilesLocal
+
+#maximum number of buffers to read for each file; for testing
+#max_buffers 1
+
+#242Pu
+#data file sirius-20140610-142244-big-000.data
+
+#233U
+#DEL 1 av exp (d,p)
+#data file datafiles/sirius-20121002-095306.data
+# data file sirius-20121002-141202.data
+# data file sirius-20121002-232441.data
+# data file sirius-20121003-120555.data
+# data file sirius-20121003-221129.data
+# data file sirius-20121002-095306-big-000.data
+# data file sirius-20121002-141202-big-000.data
+# data file sirius-20121002-141202-big-001.data
+# data file sirius-20121002-232441-big-000.data
+# data file sirius-20121002-232441-big-001.data
+# data file sirius-20121003-120555-big-000.data
+# data file sirius-20121003-120555-big-001.data
+# data file sirius-20121003-120555-big-002.data
+# data file sirius-20121003-221129-big-000.data
+# data file sirius-20121003-221129-big-001.data
+# data file sirius-20121003-221129-big-002.data
+# data file sirius-20121003-221129-big-003.data
+# data file sirius-20121003-221129-big-004.data
+# data file sirius-20121003-221129-big-005.data
+# data file sirius-20121003-221129-big-006.data
+# data file sirius-20121003-221129-big-007.data
+# data file sirius-20121003-221129-big-008.data
+
+#239Pu
+data file sirius-20140617-142011-big-000.data
+data file sirius-20140617-194528-big-016.data
+data file sirius-20140617-142011-big-001.data
+data file sirius-20140617-194528-big-017.data
+data file sirius-20140617-142011.data
+data file sirius-20140617-194528-big-018.data
+data file sirius-20140617-194528-big-000.data
+data file sirius-20140617-194528-big-019.data
+data file sirius-20140617-194528-big-001.data
+data file sirius-20140617-194528-big-020.data
+data file sirius-20140617-194528-big-002.data
+data file sirius-20140617-194528-big-021.data
+data file sirius-20140617-194528-big-003.data
+data file sirius-20140617-194528-big-022.data
+data file sirius-20140617-194528-big-004.data
+data file sirius-20140617-194528-big-023.data
+data file sirius-20140617-194528-big-005.data
+data file sirius-20140617-194528-big-024.data
+data file sirius-20140617-194528-big-006.data
+data file sirius-20140617-194528-big-025.data
+data file sirius-20140617-194528-big-007.data
+data file sirius-20140617-194528.data
+data file sirius-20140617-194528-big-008.data
+data file sirius-20140619-230949-big-000.data
+data file sirius-20140617-194528-big-009.data
+data file sirius-20140619-230949-big-001.data
+data file sirius-20140617-194528-big-010.data
+data file sirius-20140619-230949-big-002.data
+data file sirius-20140617-194528-big-011.data
+data file sirius-20140619-230949-big-003.data
+data file sirius-20140617-194528-big-012.data
+data file sirius-20140619-230949.data
+data file sirius-20140617-194528-big-013.data
+data file sirius-20140620-093336-big-000.data
+data file sirius-20140617-194528-big-014.data
+data file sirius-20140620-093336-big-001.data
+data file sirius-20140617-194528-big-015.data
+data file sirius-20140620-093336.data
+
+#DEL 2 - (alfa, alfa´)
+#data file sirius-20121005-114558.data
+#data file sirius-20121005-165759.data
+#Filen under har informasjon om increased thresholds på PPACS, entry nummer 126
+#data file Datafiles/sirius-20121005-190950.data
+#data file sirius-20121005-204507.data
+#data file sirius-20121005-222827.data
+#data file sirius-20121007-074715.data
+#data file sirius-20121008-104210.data
+#data file sirius-20121008-104751.data
+#data file sirius-20121008-142103.data
+#data file sirius-20121010-190708.data
+#data file sirius-20121010-203639.data
+
+# Write to MAMA matrix 
+export mama h_ex_f0 h_ex_f0_MAMA
+#export mama m_alfna m_alfna_Pu_MAMA_SS
+#export mama m_alfna_bg m_alfna_bg_Pu_MAMA_SS
+
+
+# at the end, spectra are dumped to the root file
+# root output file
+#export root offline_12C_plain.root
+#export root offline_74Ge_plain.root
+#export root offline_74Ge_calib.root
+#export root offline_233U_deutrons_test_ss.root
+#export root offline_242Pu_deutrons_plain_SS.root
+export root offline_239Pu_d_SS_gain_test1.root
