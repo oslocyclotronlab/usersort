@@ -44,15 +44,20 @@ public:
     bool Command(const std::string& cmd);
     
 private:
-    Histogram2Dp m_back, m_front, m_e_de_strip[8], m_e_de, m_e_de_thick, m_e_de_fiss, m_e_de_nofiss;
+    Histogram2Dp m_back, m_front, m_e_de_strip[8],/* m_e_de_dpEx0_strip[8],m_e_de_gamma_dpEx0_strip[8],*/m_e_de, m_e_de_thick, m_e_de_fiss, m_e_de_nofiss/*, m_e_de_gamma*/;
 #if defined(MAKE_INDIVIDUAL_E_DE_PLOTS) && (MAKE_INDIVIDUAL_E_DE_PLOTS>0)
     Histogram2Dp m_e_de_individual[8][8];
     Histogram1Dp h_ede_individual[8][8];
+// add individual plot, zoomed in on d,p E_X=0 and for d,d*
+//    Histogram1Dp h_e_dpEx0_individual[8][8];
+// add individual plot, zoomed in on d,p E_X=0 and for d,d*
+//    Histogram2Dp m_e_de_dpEx0_individual[8][8];
+//    Histogram2Dp m_e_de_ddEx0_individual[8][8];
 #endif /* MAKE_INDIVIDUAL_E_DE_PLOTS */
     Histogram2Dp m_nai_t, m_nai_e;
     Histogram2Dp m_alfna, m_alfna_bg;
     Histogram2Dp m_alfna_bg_nofiss, m_alfna_bg_fiss, m_alfna_fiss, m_alfna_nofiss;
-    Histogram1Dp h_na_n, h_thick, h_ede, h_ede_r[8], h_ex_r[8], h_de_n, h_e_n;
+    Histogram1Dp h_na_n, h_thick, /*h_thick_[8], h_thick_ind[8][8] ,*/h_ede, h_ede_r[8], h_ex_r[8], h_de_n, h_e_n;
     Histogram1Dp h_ex;
 
 #if defined(MAKE_CACTUS_TIME_ENERGY_PLOTS) && (MAKE_CACTUS_TIME_ENERGY_PLOTS>0)
@@ -147,6 +152,19 @@ void UserXY::CreateSpectra()
             h_ede_individual[b][f] =
                 Spec( ioprintf("h_ede_b%df%d", b, f), ioprintf("E+#DeltaE detector %d strip %d", b, f),
                       2000, 0, max_e, "E+#DeltaE [keV]" );
+// add infividual plot, zoomed in on d,p E_X=0 ... and for the d,d* reaction on Ex=0
+//            h_e_dpEx0_individual[b][f] =
+//                Spec( ioprintf("h_e_b%df%d", b, f), ioprintf("#Zoomed d,p DeltaE: E detector %d strip %d", b, f),
+//                      200, 15000, 18500, "E [keV]" );
+//            m_e_de_dpEx0_individual[b][f] = 
+//                Mat( ioprintf("m_e_de_dpEx0_b%df%d", b, f), ioprintf("#Zoomed d,p DeltaE : E detector %d strip %d", b, f),
+//                     200, 15000, 18500, "E(Si) [keV]", 200, 1000, 1800, "#DeltaE(Si) [keV]" );
+//            m_e_de_ddEx0_individual[b][f] = 
+//                Mat( ioprintf("m_e_de_ddEx0_b%df%d", b, f), ioprintf("#Zoomed d,d* DeltaE : E detector %d strip %d", b, f),
+//                     200, 9600, 11000, "E(Si) [keV]", 200, 2800, 3600, "#DeltaE(Si) [keV]" );
+//            h_thick_ind[b][f] = 
+//                Spec( ioprintf("h_thick_b%df%d", b, f), ioprintf("apparent #DeltaE thickness : E detector %d strip %d", b, f),
+//                     500, 0, 500, "#DeltaE 'thickness' [um]" );
         }
     }
 #endif /* MAKE_INDIVIDUAL_E_DE_PLOTS */
@@ -154,6 +172,14 @@ void UserXY::CreateSpectra()
         m_e_de_strip[f] = Mat( ioprintf("m_e_de_f%d", f), ioprintf("E(NaI) : E(Si) strip %d", f),
                                2000, 0, max_e, "E(Si) [keV]", 2000, 0, max_de, "#DeltaE(Si) [keV]" );
     }
+    // changed axis to compare the shift of the d,p' E_x=0 peak
+//    for(int f=0; f<8; ++f ) {
+//        m_e_de_dpEx0_strip[f] = Mat( ioprintf("m_e_de_dpEx0_f%d", f), ioprintf("E(NaI) : E(Si) strip %d", f),
+//                               500, 15000, 18500, "E(Si) [keV]", 500, 1000, 1800, "#DeltaE(Si) [keV]" );
+        // veto for gamma
+//        m_e_de_gamma_dpEx0_strip[f] = Mat( ioprintf("m_e_de_gamma_dpEx0_f%d", f), ioprintf("E(NaI) : E(Si) strip %d", f),
+//                               500, 15000, 18500, "E(Si) [keV]", 500, 1000, 1800, "#DeltaE(Si) [keV]" );
+//    }
 
     m_e_de = Mat( "m_e_de", "#DeltaE : E for all detectors together",
                   500, 0, max_e, "E(Si) [keV]", 500, 0, max_de, "#DeltaE(Si) [keV]" );
@@ -163,6 +189,8 @@ void UserXY::CreateSpectra()
                  500, 0, max_e, "E(Si) [keV]", 500, 0, max_de, "#DeltaE(Si) [keV]" );
     m_e_de_thick = Mat( "m_e_de_thick", "#DeltaE : E for all detectors together, gated on thickness",
                         500, 0, max_e, "E(Si) [keV]", 500, 0, max_de, "#DeltaE(Si) [keV]" );
+//    m_e_de_gamma = Mat( "m_e_de_gamma", "#DeltaE : E in coincidence with gamma",
+//                 500, 0, max_e, "E(Si) [keV]", 500, 0, max_de, "#DeltaE(Si) [keV]" );
     
     m_nai_t = Mat( "m_nai_t", "t(NaI) matrix", 500, 0,  500, "? [a.u.]",     32,0,32, "det. id.");
     m_nai_e = Mat( "m_nai_e", "E(NaI) matrix", 2000, 0, 15000, "E(NaI) [keV]", 32,0,32, "det. id.");
@@ -196,6 +224,8 @@ void UserXY::CreateSpectra()
         h_ex_r[f] = Spec(ioprintf("h_ex_f%d", f), ioprintf("E_{x} ring %d", f),
                           2000, -2000, 14000, "E_{x} [keV]");
         //h_ex_r[f]->SetLineColor(f+1);
+//        h_thick_[f] = Spec(ioprintf("h_thick_f%d", f), ioprintf("apparent #DeltaE thickness ring %d", f),
+//                          500, 0, 500, "#DeltaE 'thickness' [um]");
     }
     h_ede = Spec("h_ede", "E+#DeltaE all detectors", 2000, 0, max_e, "E+#DeltaE [keV]");
     h_ex  = Spec("h_ex", "E_{x} all detectors", 2000, -2000, 14000, "E_{x} [keV]");
@@ -347,8 +377,12 @@ bool UserXY::Sort(const Event& event)
     // ..................................................
     
     for( int i=0; i<event.n_e; i++ ) {
-        if(event.n_e>1) // only one E with signal, else jump to next event
-            return true;
+    
+    // ####### Fabio: If guard-rings fire, very bad!!!!!! ######## //
+    // shame on "MY"//
+//        if(event.n_e>1) // only one E with signal, else jump to next event
+
+//            return true;
         
         int id = event.e[i].chn;
 	
@@ -452,7 +486,7 @@ bool UserXY::Sort(const Event& event)
 //****************************************************************************************************        
     // investigation for fission (SiRi)
 
-    int fis = 0;
+    int fiss = 0;
 
 
 
@@ -473,33 +507,44 @@ bool UserXY::Sort(const Event& event)
         
         const float na_t_f = calib( (int)event.na[j].tdc/8, gain_tna[ide], shift_tna[ide] );      
 
-//        if ( na_t_f>190 && na_t_f<220 && na_e_f>1195 && na_e_f<1225 ) fis = 1;
+//        if ( na_t_f>190 && na_t_f<220 && na_e_f>1195 && na_e_f<1225 ) fiss = 1;
 // Fabio: don't want energy requirement at the moment
-        if ( na_t_f>190 && na_t_f<220) fis = 1;
+        if ( na_t_f>190 && na_t_f<220) fiss = 1;
     }
 //****************************************************************************************************        
     
 //****************************************************************************************************        
-    
+
+// gate on prompt d,d' peak
+//    if (e_int<9800 ||  e_int>10250 ) 
+//    return true;
+
     //E-dE matrix with veto for fission
-    if( fis==0 ) m_e_de_nofiss->Fill( e_int, de_int );
+    if( fiss==0 ) m_e_de_nofiss->Fill( e_int, de_int );
     
     //E-dE matrix only in case of fission
-    if( fis==1 ) m_e_de_fiss->Fill( e_int, de_int );
+    if( fiss==1 ) m_e_de_fiss->Fill( e_int, de_int );
     
-//****************************************************************************************************
-        
+//****************************************************************************************************    
+    
     
     // make DE:E matrices
 #if defined(MAKE_INDIVIDUAL_E_DE_PLOTS) && (MAKE_INDIVIDUAL_E_DE_PLOTS>0) 
     m_e_de_individual[ei][dei]->Fill( e_int, de_int );
+// for the zoomed version
+//    m_e_de_dpEx0_individual[ei][dei]->Fill( e_int, de_int );
+//    m_e_de_ddEx0_individual[ei][dei]->Fill( e_int, de_int );
 #endif /* MAKE_INDIVIDUAL_E_DE_PLOTS */
     m_e_de_strip[dei]->Fill( e_int, de_int );
+// make m_e_de_strip with certain axis, too,
+//    m_e_de_dpEx0_strip[dei]->Fill( e_int, de_int );
     m_e_de->Fill( e_int, de_int );
     
     //const float thick = range(e+de)-range(e);
     const float thick = range(e+de)-range(e);
     h_thick->Fill( (int)thick );
+//    h_thick_[dei]->Fill ( (int)thick );
+//    h_thick_ind[ei][dei]-> Fill ( (int)thick );
 
     const float thick_dev = thick_range[1] + thick_range[2]*e;
     const bool have_pp = fabs(thick-thick_range[0])<thick_dev;
@@ -513,6 +558,10 @@ bool UserXY::Sort(const Event& event)
     h_ede_r[dei]->Fill( ede_int );
 #if defined(MAKE_INDIVIDUAL_E_DE_PLOTS) && (MAKE_INDIVIDUAL_E_DE_PLOTS>0)
     h_ede_individual[ei][dei]->Fill( ede_int );
+//add individual h_e    
+//    h_e_dpEx0_individual[ei][dei]->Fill( e_int );
+
+
 #endif /* MAKE_INDIVIDUAL_E_DE_PLOTS */
 
     // fit of kinz Ex(E+DE)
@@ -567,6 +616,8 @@ bool UserXY::Sort(const Event& event)
 //        if(ex_int>1650 && ex_int<1918)    // 1st Ex in 28Si
         //if(ex_int>8705 && ex_int<9002)      // peak at 8904 keV in 28Si
         //if(ex_int>3550 && ex_int<3700)      // Gate in 57Fe(p,d)56Fe
+//if (ex_int<10090 || ex_int>10575) //Gate on 9.1 MeV in Pu239, possibly the O16 1st ex?
+//	  return true;
             m_nai_e->Fill( na_e_int, id );
 
         if( event.na[i].tdc <= 0 )
@@ -577,31 +628,31 @@ bool UserXY::Sort(const Event& event)
 
         m_nai_t->Fill( na_t_int, id );
 
-//****************************************************************************************************        
-        // investigation for fission (CACTUS)
-        int fiss = 0;
-        for( int j=0; j<event.n_na; j++ ) {
-            const int ide = event.na[j].chn;
-//            if  ( ide!=5 && ide!=13 && ide!=31 && ide!=32 )
-            if  ( ide!=4 && ide!=12 && ide!=30 && ide!=31 )
-                continue;
+// //****************************************************************************************************        
+        // // investigation for fission (CACTUS)
+        // int fiss = 0;
+        // for( int j=0; j<event.n_na; j++ ) {
+            // const int ide = event.na[j].chn;
+// //            if  ( ide!=5 && ide!=13 && ide!=31 && ide!=32 )
+            // if  ( ide!=4 && ide!=12 && ide!=30 && ide!=31 )
+                // continue;
             
-//            const float na_e_f = calib( (int)event.na[j].adc, gain_na[idf], shift_na[idf] );
+// //            const float na_e_f = calib( (int)event.na[j].adc, gain_na[idf], shift_na[idf] );
             
-//            const float na_t_f = calib( (int)event.na[j].tdc/8, gain_tna[idf], shift_tna[idf] );
- // Changed variable from idf -> ide
-            
-            
-            const float na_e_f = calib( (int)event.na[j].adc, gain_na[ide], shift_na[ide] );
-            
-            const float na_t_f = calib( (int)event.na[j].tdc/8, gain_tna[ide], shift_tna[ide] );
+// //            const float na_t_f = calib( (int)event.na[j].tdc/8, gain_tna[idf], shift_tna[idf] );
+ // // Changed variable from idf -> ide
             
             
-//            if ( na_t_f>190 && na_t_f<220 && na_e_f>1195 && na_e_f<1225 ) fiss = 1;
-// Fabio: don't want energy requirement at the moment
-            if ( na_t_f>190 && na_t_f<220) fiss = 1;
-        }
-//****************************************************************************************************        	
+            // const float na_e_f = calib( (int)event.na[j].adc, gain_na[ide], shift_na[ide] );
+            
+            // const float na_t_f = calib( (int)event.na[j].tdc/8, gain_tna[ide], shift_tna[ide] );
+            
+            
+// //            if ( na_t_f>190 && na_t_f<220 && na_e_f>1195 && na_e_f<1225 ) fiss = 1;
+// // Fabio: don't want energy requirement at the moment
+            // if ( na_t_f>190 && na_t_f<220) fiss = 1;
+        // }
+// //****************************************************************************************************        	
 	
 	
 #if defined(MAKE_CACTUS_TIME_ENERGY_PLOTS) && (MAKE_CACTUS_TIME_ENERGY_PLOTS>0)
@@ -623,35 +674,36 @@ bool UserXY::Sort(const Event& event)
 
         //Particle-gamma matrix all together
 //        if( id!=5 && id!=13 && id!=31 && id!=32 && na_t_c>185 && na_t_c<215 ) {
-        if( id!=4 && id!=12 && id!=30 && id!=31 && na_t_c>185 && na_t_c<215 ) {
+        if( id!=4 && id!=12 && id!=30 && id!=31 && na_t_c>190 && na_t_c<220) {
             m_alfna->Fill( na_e_int, ex_int, 1);
 //        } else if(id!=5 && id!=13 && id!=31 && id!=32 && na_t_c>233 && na_t_c<263 ) {
-        } else if(id!=4 && id!=12 && id!=30 && id!=31 && na_t_c>233 && na_t_c<263 ) {
+        } else if(id!=4 && id!=12 && id!=30 && id!=31 && na_t_c>300 && na_t_c<330 ) {
             m_alfna->Fill( na_e_int, ex_int, -1);
 
             m_alfna_bg->Fill( na_e_int, ex_int );
-            weight = -1;
-        }            
-
+            weight = -1;   
+//Fabio: Here I also want a gamma to be present in my m_e_de_matrix''''
+//            m_e_de_gamma_dpEx0_strip[dei]->Fill( e_int, de_int );
+        }
         
 //***************************************************************************************************        
         
         //Particle-gamma matrix with veto for fission
 //        if( id!=5 && id!=13 && id!=31 && id!=32 && fiss==0 && na_t_c>201 && na_t_c<237 ) {
-        if( id!=4 && id!=12 && id!=30 && id!=31 && fiss==0 && na_t_c>201 && na_t_c<237 ) {
+        if( id!=4 && id!=12 && id!=30 && id!=31 && fiss==0 && na_t_c>190 && na_t_c<220 ) {
                 m_alfna_nofiss->Fill( na_e_int, ex_int, 1);
 //            } else if( id!=5 && id!=13 && id!=31 && id!=32 && fiss==0 && na_t_c>111 && na_t_c<147 ) {
-            } else if( id!=4 && id!=12 && id!=30 && id!=31 && fiss==0 && na_t_c>111 && na_t_c<147 ) {
+            } else if( id!=4 && id!=12 && id!=30 && id!=31 && fiss==0 && na_t_c>300&& na_t_c<330) {
                 m_alfna_nofiss->Fill( na_e_int, ex_int, -1);
                 m_alfna_bg_nofiss->Fill( na_e_int, ex_int );
             }
 
         //Particle-gamma matrix only in case of fission
 //        if( id!=5 && id!=13 && id!=31 && id!=32 && fiss==1 && na_t_c>201 && na_t_c<237 ) {
-        if( id!=4 && id!=12 && id!=30 && id!=31 && fiss==1 && na_t_c>201 && na_t_c<237 ) {
+        if( id!=4 && id!=12 && id!=30 && id!=31 && fiss==1 && na_t_c>190 && na_t_c<220 ) {
             m_alfna_fiss->Fill( na_e_int, ex_int, 1);
 //        } else if( id!=5 && id!=13 && id!=31 && id!=32  && fiss==1 && na_t_c>111 && na_t_c<147 ) {
-        } else if( id!=4 && id!=12 && id!=30 && id!=31  && fiss==1 && na_t_c>111 && na_t_c<147 ) {
+        } else if( id!=4 && id!=12 && id!=30 && id!=31  && fiss==1 && na_t_c>300 && na_t_c<330 ) {
             m_alfna_fiss->Fill( na_e_int, ex_int, -1);
             m_alfna_bg_fiss->Fill( na_e_int, ex_int );
         }
