@@ -44,7 +44,7 @@ public:
     bool Command(const std::string& cmd);
     
 private:
-    Histogram2Dp m_back, m_front, m_e_de_strip[8],/* m_e_de_dpEx0_strip[8],m_e_de_gamma_dpEx0_strip[8],*/m_e_de, m_e_de_thick, m_e_de_fiss, m_e_de_nofiss/*, m_e_de_gamma*/;
+    Histogram2Dp m_back, m_front, m_e_de_strip[8],/* m_e_de_dpEx0_strip[8],m_e_de_gamma_dpEx0_strip[8],*/m_e_de, m_e_de_thick, m_e_de_fiss, m_e_de_nofiss/*, m_e_de_gamma*/, m_e_de_fiss_nobg, m_e_de_fiss_bg;
 #if defined(MAKE_INDIVIDUAL_E_DE_PLOTS) && (MAKE_INDIVIDUAL_E_DE_PLOTS>0)
     Histogram2Dp m_e_de_individual[8][8];
     Histogram1Dp h_ede_individual[8][8];
@@ -58,10 +58,10 @@ private:
     Histogram2Dp m_alfna, m_alfna_bg;
     Histogram2Dp m_alfna_bg_nofiss, m_alfna_bg_fiss, m_alfna_fiss, m_alfna_nofiss;
     Histogram1Dp h_na_n, h_thick, /*h_thick_[8], h_thick_ind[8][8] ,*/h_ede, h_ede_r[8], h_ex_r[8], h_de_n, h_e_n;
-    Histogram1Dp h_ex;
+    Histogram1Dp h_ex, h_ex_fiss;
 
 #if defined(MAKE_CACTUS_TIME_ENERGY_PLOTS) && (MAKE_CACTUS_TIME_ENERGY_PLOTS>0)
-    Histogram2Dp m_nai_e_t[28], m_nai_e_t_all, m_nai_e_t_c, m_siri_e_t[8], m_siri_e_t_all;
+    Histogram2Dp m_nai_e_t[28], m_nai_e_t_all, m_nai_e_t_c, m_siri_e_t[8], m_siri_e_t_all, m_ppac_e_t[4], m_ppac_e_t_all, m_ppac_e_t_c, m_nai_e_t_fiss[28], m_nai_e_t_all_fiss, m_nai_e_t_c_fiss, m_nai_e_t_fiss_bg[28], m_nai_e_t_all_fiss_bg, m_nai_e_t_c_fiss_bg;
 #endif /* MAKE_CACTUS_TIME_ENERGY_PLOTS */
 
 #if defined(MAKE_TIME_EVOLUTION_PLOTS) && (MAKE_TIME_EVOLUTION_PLOTS>0)
@@ -74,6 +74,12 @@ private:
     Parameter tnai_corr_enai;
     //! Correction of CACTUS time for SiRi back detector energy.
     Parameter tnai_corr_esi;
+
+    //Gry trying to change the sort code so that we can read in separate parameters for correcting the PPAC time
+    //This parameter is added to run_sunniva_deutrons.batch
+    //! Correction of CACTUS time for SiRi back detector energy.
+    Parameter tppac_corr_esi;
+
     //! Polynomials to calculate excitation energy from SiRi energy (E+DE).
     /*! Contains 8*3 coefficients. */
     Parameter ex_from_ede;
@@ -94,6 +100,10 @@ private:
     float tNaI(float t,    /*!< Uncorrected CACTUS time. */
                float Enai, /*!< Calibrated CACTUS energy in keV. */
                float Esi   /*!< Calibrated SiRi back energy in keV. */);
+
+        //Declaration of function to correct PPAC time
+    float tPpac(float t, /*!<Uncorrected CACTUS time.*/
+                float Esi /*!Calibrated SiRi back energy in keV.*/);
   
     float range(float E /*!< particle energy in keV */)
         { return particlerange.GetRange( (int)E ); }
@@ -122,6 +132,7 @@ bool UserXY::Command(const std::string& cmd)
 UserXY::UserXY()
     : tnai_corr_enai ( GetParameters(), "tnai_corr_enai", 4 )
     , tnai_corr_esi  ( GetParameters(), "tnai_corr_esi", 4 )
+    , tppac_corr_esi  ( GetParameters(), "tppac_corr_esi", 4 )
     , ex_from_ede    ( GetParameters(), "ex_from_ede", 8*3 )
     , ex_corr_exp    ( GetParameters(), "ex_corr_exp", 8*2 )
     , ede_rect       ( GetParameters(), "ede_rect", 4 )
@@ -189,6 +200,10 @@ void UserXY::CreateSpectra()
                  500, 0, max_e, "E(Si) [keV]", 500, 0, max_de, "#DeltaE(Si) [keV]" );
     m_e_de_thick = Mat( "m_e_de_thick", "#DeltaE : E for all detectors together, gated on thickness",
                         500, 0, max_e, "E(Si) [keV]", 500, 0, max_de, "#DeltaE(Si) [keV]" );
+    m_e_de_fiss_bg = Mat( "m_e_de_fiss_bg", "#DeltaE : E in coincidence with fission, background",
+                 500, 0, max_e, "E(Si) [keV]", 500, 0, max_de, "#DeltaE(Si) [keV]" );
+    m_e_de_fiss_nobg = Mat( "m_e_de_fiss_nobg", "#DeltaE : E in coincidence with fission, w/o bg",
+                 500, 0, max_e, "E(Si) [keV]", 500, 0, max_de, "#DeltaE(Si) [keV]" );
 //    m_e_de_gamma = Mat( "m_e_de_gamma", "#DeltaE : E in coincidence with gamma",
 //                 500, 0, max_e, "E(Si) [keV]", 500, 0, max_de, "#DeltaE(Si) [keV]" );
     
@@ -229,11 +244,16 @@ void UserXY::CreateSpectra()
     }
     h_ede = Spec("h_ede", "E+#DeltaE all detectors", 2000, 0, max_e, "E+#DeltaE [keV]");
     h_ex  = Spec("h_ex", "E_{x} all detectors", 2000, -2000, 14000, "E_{x} [keV]");
+    h_ex_fiss  = Spec("h_ex_fiss", "E_{x} all detectors, in coincidence with fission", 2000, -2000, 14000, "E_{x} [keV]");
 
 #if defined(MAKE_CACTUS_TIME_ENERGY_PLOTS) && (MAKE_CACTUS_TIME_ENERGY_PLOTS>0)
     const int max_enai = 12000;
     for(int n=0; n<28; ++n ) {
-        m_nai_e_t[n] = Mat( ioprintf("m_nai_e_t_%02d", n), ioprintf("t : E NaI %d", n),
+    m_nai_e_t[n] = Mat( ioprintf("m_nai_e_t_%02d", n), ioprintf("t : E NaI %d", n),
+                            500, 0, max_enai, "E(NaI) [keV]", 500, 0, 500, "t(NaI) [a.u.]" );
+    m_nai_e_t_fiss[n] = Mat( ioprintf("m_nai_e_t_fiss_%02d", n), ioprintf("t : E NaI %d", n, "coinc. PPAC"),
+                            500, 0, max_enai, "E(NaI) [keV]", 500, 0, 500, "t(NaI) [a.u.]" );
+    m_nai_e_t_fiss_bg[n] = Mat( ioprintf("m_nai_e_t_fiss_bg_%02d", n), ioprintf("t : E NaI %d", n, "coinc. PPAC bg."),
                             500, 0, max_enai, "E(NaI) [keV]", 500, 0, 500, "t(NaI) [a.u.]" );
     }
     m_nai_e_t_all = Mat( "m_nai_e_t", "t : E NaI all together",
@@ -241,12 +261,41 @@ void UserXY::CreateSpectra()
     m_nai_e_t_c   = Mat( "m_nai_e_t_c", "t : E NaI all together, corrected",
                          500, 0, max_enai, "E(NaI) [keV]", 500, 0, 500, "t(NaI) [a.u.]" );
 
+    m_nai_e_t_all_fiss = Mat( "m_nai_e_t_fiss_all", "t : E NaI all together",
+                         500, 0, max_enai, "E(NaI) [keV]", 500, 0, 500, "t(NaI) [a.u.], PPAC coincidence" );
+
+
+    m_nai_e_t_c_fiss   = Mat( "m_nai_e_t_c_fiss", "t : E NaI all together, corr, PPAC coincidence",
+                         500, 0, max_enai, "E(NaI) [keV]", 500, 0, 500, "t(NaI) [a.u.]" );
+
+    m_nai_e_t_all_fiss_bg = Mat( "m_nai_e_t_fiss_bg_all", "t : E NaI all together, bg.",
+                         500, 0, max_enai, "E(NaI) [keV]", 500, 0, 500, "t(NaI) [a.u.], PPAC coincidence" );
+
+    m_nai_e_t_c_fiss_bg   = Mat( "m_nai_e_t_c_fiss_bg", "t : E NaI all together, corrected, PPAC coincidence bg.",
+                         500, 0, max_enai, "E(NaI) [keV]", 500, 0, 500, "t(NaI) [a.u.]" );
+
+
+
     for(int n=0; n<8; ++n ) {
-        m_siri_e_t[n] = Mat( ioprintf("m_siri_e_t_b%d", n), ioprintf("t(NaI) : E(Si) detector %d", n),
+    m_siri_e_t[n] = Mat( ioprintf("m_siri_e_t_b%d", n), ioprintf("t(NaI) : E(Si) detector %d", n),
                              500, 0, max_e, "E(Si) [keV]", 500, 0, 500, "t(NaI) corr. [a.u.]" );
     }
     m_siri_e_t_all = Mat( "m_siri_e_t", "t(NaI) : E(Si) all detectors",
                           500, 0, max_e, "E(Si) [keV]", 500, 0, 500, "t(NaI) corr. [a.u.]" );
+
+    
+
+    for(int n=0; n<8; ++n ) {
+    m_ppac_e_t[n] = Mat( ioprintf("m_ppac_e_t_b%d", n), ioprintf("t(PPAC) : E(Si) detector %d", n),
+                         500, 0, max_e, "E(Si) [keV]", 500, 0, 500, "t(PPAC) [a.u.]" );
+    }
+    m_ppac_e_t_all = Mat( "m_ppac_e_t", "t(PPAC) : E(Si) all detectors",
+                          500, 0, max_e, "E(Si) [keV]", 500, 0, 500, "t(PPAC) [a.u.]" );
+    m_ppac_e_t_c = Mat( "m_ppac_e_t_c", "t(PPAC) : E(Si) all detectors, corrected",
+                          500, 0, max_e, "E(Si) [keV]", 500, 0, 500, "t(PPAC) corr. [a.u.]" );
+
+
+
 #endif /* MAKE_CACTUS_TIME_ENERGY_PLOTS */
 
 #if defined(MAKE_TIME_EVOLUTION_PLOTS) && (MAKE_TIME_EVOLUTION_PLOTS>0)
@@ -293,6 +342,13 @@ float UserXY::tNaI(float t, float Enai, float Esi)
     return t - c - d;
 }
 
+ // ########################################################################
+//Function to correct the time of the PPAC
+float UserXY::tPpac(float t, float Esi)
+{  
+    const float a = tppac_corr_esi [0] + tppac_corr_esi [1]/(Esi +tppac_corr_esi [2]) + tppac_corr_esi [3]*Esi;
+    return t - a;
+}
 // ########################################################################
 
 
@@ -487,7 +543,7 @@ bool UserXY::Sort(const Event& event)
     // investigation for fission (SiRi)
 
     int fiss = 0;
-
+    // int fissppac = 0;
 
 
     for( int j=0; j<event.n_na; j++ ) {
@@ -508,8 +564,10 @@ bool UserXY::Sort(const Event& event)
         const float na_t_f = calib( (int)event.na[j].tdc/8, gain_tna[ide], shift_tna[ide] );      
 
 //        if ( na_t_f>190 && na_t_f<220 && na_e_f>1195 && na_e_f<1225 ) fiss = 1;
-// Fabio: don't want energy requirement at the moment
-        if ( na_t_f>190 && na_t_f<220) fiss = 1;
+// // Fabio: don't want energy requirement at the moment
+//         if ( na_t_f>190 && na_t_f<220) fiss = 1;
+//         if ( ppac_t_c>190 && ppac_t_c<220 &&  5e3 < e )   fissppac = 1; // select fission blob in tPPAC vs E_SiRi gate
+//         if ( ppac_t_c>300 && ppac_t_c<330 &&  5e3 < e )   fissppac = 2; // added these to also see background fissions
     }
 //****************************************************************************************************        
     
@@ -575,6 +633,9 @@ bool UserXY::Sort(const Event& event)
     h_ex->Fill( ex_int );
     h_ex_r[dei]->Fill( ex_int );
 
+    if (fiss==1) {
+    h_ex_fiss->Fill( ex_int );
+    }
     // ..................................................
 
 #if defined(MAKE_TIME_EVOLUTION_PLOTS) && (MAKE_TIME_EVOLUTION_PLOTS>0)
@@ -585,16 +646,56 @@ bool UserXY::Sort(const Event& event)
     // ..................................................
 
     h_na_n->Fill(event.n_na);
+
     for( int i=0; i<event.n_na; i++ ) {
         const int id = event.na[i].chn;
 	
   //      if( id == 15 || id == 9)
   //          continue;	
-	
+
+        
+        //Gry har laget et ny "funksjon" UserXY::tPpac som leser inn NaI-tid og Siri-energi og bruker parameterene
+        //tppac_corr_esi til å korrigere tiden.
+
+        // const int   ppac_t_c = (int)tPpac(na_t,e);
+    int fissppac = 0;
+
+
+    // for( int j=0; j<event.n_na; j++ ) {
+        // const int ide = event.na[j].chn;
+        const int ide = event.na[i].chn;
+
+ //       if ( ide!=5 && ide!=13 && ide!=31 && ide!=32 )
+                int   ppac_t_c;
+        if ( ide==4 || ide==12 || ide==30 || ide==31 ){
+
+        const float na_e_f = calib( (int)event.na[i].adc, gain_na[ide], shift_na[ide] );
+        
+        const float na_t_f = calib( (int)event.na[i].tdc/8, gain_tna[ide], shift_tna[ide] );  
+
+        const int   ppac_t_c = (int)tPpac(na_t_f,e); 
+//        if ( na_t_f>190 && na_t_f<220 && na_e_f>1195 && na_e_f<1225 ) fiss = 1;
+// Fabio: don't want energy requirement at the moment
+        if ( na_t_f>190 && na_t_f<220) fiss = 1;
+        if ( ppac_t_c>190 && ppac_t_c<230 &&  5e3 < e )   fissppac = 1; // select fission blob in tPPAC vs E_SiRi gate
+        if ( ppac_t_c>300 && ppac_t_c<360 &&  5e3 < e )   fissppac = 2; // added these to also see background fissions
+    // }
+           }
+
+
         if( event.na[i].adc <= 0 )
             continue;
+
+        if( event.na[i].tdc <= 0 )
+            continue;
+        const float na_t = calib( (int)event.na[i].tdc/8, gain_tna[id], shift_tna[id] ); 
+        const int   na_t_int = (int)na_t;
+        const float na_e = calib( (int)event.na[i].adc, gain_na[id], shift_na[id] );
+        
+        const int   na_t_c = (int)tNaI(na_t, na_e, e);
+
   //      std::cout << id << std::endl;
-        float na_e = calib( (int)event.na[i].adc, gain_na[id], shift_na[id] );
+        
 
         
         const int   na_e_int = (int)na_e;
@@ -618,14 +719,9 @@ bool UserXY::Sort(const Event& event)
         //if(ex_int>3550 && ex_int<3700)      // Gate in 57Fe(p,d)56Fe
 //if (ex_int<10090 || ex_int>10575) //Gate on 9.1 MeV in Pu239, possibly the O16 1st ex?
 //	  return true;
-            m_nai_e->Fill( na_e_int, id );
+        m_nai_e->Fill( na_e_int, id );
 
-        if( event.na[i].tdc <= 0 )
-            continue;
-        const float na_t = calib( (int)event.na[i].tdc/8, gain_tna[id], shift_tna[id] ); 
-        const int   na_t_int = (int)na_t;
-        const int   na_t_c = (int)tNaI(na_t, na_e, e);
-
+        
         m_nai_t->Fill( na_t_int, id );
 
 // //****************************************************************************************************        
@@ -652,7 +748,11 @@ bool UserXY::Sort(const Event& event)
 // // Fabio: don't want energy requirement at the moment
             // if ( na_t_f>190 && na_t_f<220) fiss = 1;
         // }
-// //****************************************************************************************************        	
+// //****************************************************************************************************     
+    // Investigate once again 
+// 
+// //****************************************************************************************************        
+
 	
 	
 #if defined(MAKE_CACTUS_TIME_ENERGY_PLOTS) && (MAKE_CACTUS_TIME_ENERGY_PLOTS>0)
@@ -663,6 +763,32 @@ bool UserXY::Sort(const Event& event)
             m_nai_e_t_c   ->Fill( na_e_int,  na_t_c );
 	    m_siri_e_t[ei]->Fill( e_int, na_t_c );
             m_siri_e_t_all->Fill( e_int, na_t_c );
+        }
+        
+        if ( id!=4 && id!=12 && id!=30 && id!=31 && (ppac_t_c>190 && ppac_t_c<230 &&  5e3 < e)) {   
+        m_nai_e_t_fiss[id] ->Fill( na_e_int,  na_t_int );
+        m_nai_e_t_all_fiss ->Fill( na_e_int,  na_t_int );
+        m_nai_e_t_c_fiss   ->Fill( na_e_int,  na_t_c );
+        }
+
+        if ( id!=4 && id!=12 && id!=30 && id!=31 && fissppac==2) {   
+        m_nai_e_t_fiss_bg[id] ->Fill( na_e_int,  na_t_int );
+        m_nai_e_t_all_fiss_bg ->Fill( na_e_int,  na_t_int );
+        m_nai_e_t_c_fiss_bg   ->Fill( na_e_int,  na_t_c );
+        }
+
+
+
+        // if ( (id==4 || id==12 || id==30 || id==31) && fiss==1) {  //(do for any PPAC) AND (only when it is a fission)  
+        // m_ppac_e_t[ei]->Fill( e_int, na_t_int );     // ppac are feeded in as a NaI signal, therefore we
+        //     m_ppac_e_t_all->Fill( e_int, na_t_int ); // can use na_t_int as ppac times
+        // }
+
+
+        if ( (id==4 || id==12 || id==30 || id==31) ) {  //(do for any PPAC)
+        m_ppac_e_t[ei]->Fill( e_int, na_t_int );     // ppac are feeded in as a NaI signal, therefore we
+            m_ppac_e_t_all->Fill( e_int, na_t_int ); // can use na_t_int as ppac times
+            m_ppac_e_t_c->Fill( e_int, ppac_t_c );
         }
        
 #endif /* MAKE_CACTUS_TIME_ENERGY_PLOTS */
@@ -708,7 +834,20 @@ bool UserXY::Sort(const Event& event)
             m_alfna_bg_fiss->Fill( na_e_int, ex_int );
         }
 //****************************************************************************************************
-         		
+//Particle-gamma matrix only in case of fission
+//        if( id!=5 && id!=13 && id!=31 && id!=32 && fiss==1 && na_t_c>201 && na_t_c<237 ) {
+//         if( id!=4 && id!=12 && id!=30 && id!=31 && fiss==1 && na_t_c>190 && na_t_c<220 ) {
+//             //m_alfna_fiss->Fill( na_e_int, ex_int, 1);
+//             m_e_de_fiss_nobg->Fill( e_int, de_int );
+// //        } else if( id!=5 && id!=13 && id!=31 && id!=32  && fiss==1 && na_t_c>111 && na_t_c<147 ) {
+//         } else if( id!=4 && id!=12 && id!=30 && id!=31  && fiss==1 && na_t_c>300 && na_t_c<330 ) {
+//             m_e_de_fiss_nobg->Fill( e_int, de_int, -1);
+//             m_e_de_fiss_bg->Fill( e_int, de_int );
+//         }
+
+
+
+
  
 
 #if defined(MAKE_TIME_EVOLUTION_PLOTS) && (MAKE_TIME_EVOLUTION_PLOTS>0)
