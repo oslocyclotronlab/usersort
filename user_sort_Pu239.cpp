@@ -73,6 +73,7 @@
      Histogram2Dp m_nai_e_t_all_fiss_bg, m_nai_e_t_c_fiss_bg;
 #endif /* MAKE_CACTUS_TIME_ENERGY_PLOTS */      
 
+
  #if defined(MAKE_TIME_EVOLUTION_PLOTS) && (MAKE_TIME_EVOLUTION_PLOTS>0)
      Histogram2Dp m_nai_t_evol[28], m_nai_e_evol[28];
      Histogram2Dp m_e_evol[8], m_de_evol[8][8], m_ede_evol[8], m_ex_evol;
