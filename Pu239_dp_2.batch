@@ -67,6 +67,37 @@ parameter ex_corr_exp    =  0 1 \
     0 1 \
     0 1
 
+# define id of NaI detectors and PPAC detectors (need to change usersort for more then four PPAC!)
+parameter channel_PPAC = 4 12 30 31
+#id_na = 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 21 22 23 24 25 26 27
+
+# NaI time gates, for making the ALFNA matrices 
+# found by looking at the m_nai_t plot and projecting it
+# down to the x-axis/m_nai_e_t_c x-axis plot 
+# remember to subtract the same amount of channels 
+# as the ones that are filled, and make sure you "hit" a top!
+# parameter = lower cut of prompt ,     higher gate of prompt peak,  \
+#             lower cut on backgr.,     higher cut backgr.
+parameter nai_time_cuts = 190 220 \
+                          300 330
+
+# PPAC time gates
+# time gates of the ppacs are found from the fission blob 
+# in the m_siri_e_t_ppac plot (fission blob in tPPAC vs E_SiRi gate)
+# - time gates from the y-axis, and energy from the x-axis
+# parameter = lower gate of ppac timing,            higher gate, 
+#             lower gate on ppac timing background, higher gate background
+parameter ppac_time_cuts = 190 200 \
+                           290 300
+
+# Energy gate on fission
+# the energy gate is found by looking at the 
+# m_siri_e_t_ppac plot (fission blob in tPPAC vs E_SiRi gate) 
+# - it should be roughly the fission barrier
+# (Fission starts at some point, only events with 
+# a higher energy than excitation_energy_min can be true fission events)
+parameter fission_excitation_energy_min = 5000  # in keV
+
 #data directory Datafiles
 data directory ../239Pu/datafilesLocal
 
@@ -176,4 +207,4 @@ data file sirius-20140617-194528-big-002.data
 #export root offline_74Ge_calib.root
 #export root offline_233U_deutrons_test_ss.root
 #export root offline_242Pu_deutrons_plain_SS.root
-export root offline_Pu239_dp_029_2.root
+export root offline_Pu239_dp_029_unif.root
