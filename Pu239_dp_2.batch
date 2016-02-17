@@ -2,21 +2,23 @@
 #   parameter gain_e = ...
 # and so on
 gain file gainshifts_013.dat
-# gain file gainshifts_Sun_deutron.dat
+# gain file gainshifts_plain.dat
 
 
 # cactus energy correction parameters for cactus time
 # parameter tnai_corr_enai = 0 1 0 0
-# parameter tnai_corr_enai =  8.22125 6392.62 -263.2 -0.00241335
-#parameter tnai_corr_enai = -5.52368 18201.9 210.387 -0.00125989
+parameter tnai_corr_enai = -5.52368 18201.9 210.387 -0.00125989
 
 # siri energy correction parameters for cactus time
-# parameter tnai_corr_esi  = 17.0316 -268365 -7166.71 -0.000320274
 # parameter tnai_corr_esi  = 0 1 0 0
 parameter tnai_corr_esi  = 50.4471 -475514 4506.25 -0.00185164
 
-#time correction parameters for PPAC
+################ Only when PPACs are used ##################################
+# time correction parameters for PPAC
+# ### comment out this line(s) if no PPACs are used
+# parameter tnai_corr_enai = 0 1 0 0
 parameter tppac_corr_esi  =  50.4471 -475514 4506.25 -0.00185164
+############################################################################
 
 # Parameters for the range curve, 3He or alpha
 #rangefile zrange_he3.dat
@@ -32,11 +34,11 @@ parameter ede_rect  = 500 250 30 500
 # Excluding Z=1 particles:
 #parameter ede_rect  = 500 2500 2000 2500
 
-# Thickness gate 
-#parameter thick_range = 82 12 0
-#parameter thick_range = 125 15 0
- parameter thick_range = 140 20 0
-#parameter thick_range = 276 75 0
+# Thickness gate for proton banana
+# parameter thick_range = 82 12 0
+parameter thick_range = 125 15 0
+# parameter thick_range = 140 20 0
+# parameter thick_range = 276 75 0
 # parameter thick_range = 230 25 0
 
 # Thickness gate for 3He banana 
@@ -47,7 +49,7 @@ parameter ede_rect  = 500 250 30 500
 #parameter thick_range = 48 5 0
 
 # Fit of rkinz column 1 as function of rkinz column 6
-#  233U(d,p)
+#  240Pu(d,p)
 parameter ex_from_ede    = 1.5528e+4 -9.6287e-1 -1.3943e-6 \
 1.5521e+4 -9.6197e-1 -1.4187e-6 \
 1.5514e+4 -9.6096e-1 -1.4466e-6 \
@@ -67,10 +69,6 @@ parameter ex_corr_exp    =  0 1 \
     0 1 \
     0 1
 
-# define id of NaI detectors and PPAC detectors (need to change usersort for more then four PPAC!)
-parameter channel_PPAC = 4 12 30 31
-#id_na = 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 21 22 23 24 25 26 27
-
 # NaI time gates, for making the ALFNA matrices 
 # found by looking at the m_nai_t plot and projecting it
 # down to the x-axis/m_nai_e_t_c x-axis plot 
@@ -81,12 +79,23 @@ parameter channel_PPAC = 4 12 30 31
 parameter nai_time_cuts = 190 220 \
                           300 330
 
+############## Attention when no PPACs are used ###########################
+# define id of NaI detectors and PPAC detectors (need to change usersort for more then four PPACs!)
+# All other channel are considered as NaI detectors. In case you don't use fission detectors,
+# define this parameters as "-1" - all id's are positive numbers, thus none will match -1.
+# ### Corresponding line /without/ fission detectors:
+# parameter channel_PPAC = -1 -1 -1 -1
+# ### Corresponding line /with/ fission detectors: [adopt channel numbers]
+parameter channel_PPAC = 4 12 30 31                          
+
+################ Only when PPACs are used ##################################
 # PPAC time gates
 # time gates of the ppacs are found from the fission blob 
 # in the m_siri_e_t_ppac plot (fission blob in tPPAC vs E_SiRi gate)
 # - time gates from the y-axis, and energy from the x-axis
 # parameter = lower gate of ppac timing,            higher gate, 
 #             lower gate on ppac timing background, higher gate background
+# ### comment out this line(s) if no PPACs are used
 parameter ppac_time_cuts = 190 200 \
                            290 300
 
@@ -96,16 +105,15 @@ parameter ppac_time_cuts = 190 200 \
 # - it should be roughly the fission barrier
 # (Fission starts at some point, only events with 
 # a higher energy than excitation_energy_min can be true fission events)
+# ### comment out this line(s) if no PPACs are used
 parameter fission_excitation_energy_min = 5000  # in keV
+############################################################################
 
 #data directory Datafiles
 data directory ../239Pu/datafilesLocal
 
 #maximum number of buffers to read for each file; for testing
 #max_buffers 1
-
-#242Pu
-#data file sirius-20140610-142244-big-000.data
 
 #239Pu
 # data file sirius-20140617-142011-big-000.data
@@ -181,20 +189,6 @@ data file sirius-20140617-194528-big-002.data
 # data file sirius-20140622-080050-big-012.data
 # data file sirius-20140622-080050.data
 
-#DEL 2 - (alfa, alfa´)
-#data file sirius-20121005-114558.data
-#data file sirius-20121005-165759.data
-#Filen under har informasjon om increased thresholds på PPACS, entry nummer 126
-#data file Datafiles/sirius-20121005-190950.data
-#data file sirius-20121005-204507.data
-#data file sirius-20121005-222827.data
-#data file sirius-20121007-074715.data
-#data file sirius-20121008-104210.data
-#data file sirius-20121008-104751.data
-#data file sirius-20121008-142103.data
-#data file sirius-20121010-190708.data
-#data file sirius-20121010-203639.data
-
 # Write to MAMA matrix 
 #export mama h_ex_f0 h_ex_f0_MAMA
 #export mama m_alfna alfna
@@ -202,9 +196,4 @@ data file sirius-20140617-194528-big-002.data
 
 # at the end, spectra are dumped to the root file
 # root output file
-#export root offline_12C_plain.root
-#export root offline_74Ge_plain.root
-#export root offline_74Ge_calib.root
-#export root offline_233U_deutrons_test_ss.root
-#export root offline_242Pu_deutrons_plain_SS.root
 export root offline_Pu239_dp_029_unif.root

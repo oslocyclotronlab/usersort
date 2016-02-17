@@ -54,8 +54,9 @@
 #if USE_FISSION_PARAMETERS>0
      bool CheckPPACpromptGate (float);
      bool CheckPPACbgGate (float);
-     bool IsPPACChannel (int);
 #endif /* USE_FISSION_PARAMETERS */
+     bool IsPPACChannel (int);
+
 
      
  private:
@@ -98,10 +99,12 @@
    
      //! Correction of CACTUS time for SiRi back detector energy.
      Parameter tnai_corr_esi;
-    
+
+#if USE_FISSION_PARAMETERS>0
      //! Correction of CACTUS time for SiRi back detector energy.
      Parameter tppac_corr_esi;
- 
+#endif /* USE_FISSION_PARAMETERS */ 
+
      //! Polynomials to calculate excitation energy from SiRi energy (E+DE).
      /*! Contains 8*3 coefficients. */
      Parameter ex_from_ede;
@@ -142,10 +145,13 @@
      
      //! Time gates for the ppacs.
      Parameter fission_excitation_energy_min;
+#endif /* USE_FISSION_PARAMETERS */     
 
      //! Channel number of the PPACs
+     // In case no PPACs are used, just define the channels as "-1" in the batch file,
+     // then, as the channel id's are positive numbers, no channel will be identified as PPAC
      Parameter channel_PPAC;
-#endif /* USE_FISSION_PARAMETERS */
+
 
 
      //! Apply energy corrections to CACTUS time.
@@ -154,7 +160,7 @@
                 float Enai, /*!< Calibrated CACTUS energy in keV. */
                 float Esi   /*!< Calibrated SiRi back energy in keV. */);
  
-	 //Declaration of function to correct PPAC time
+     //Declaration of function to correct PPAC time
      float tPpac(float t, /*!<Uncorrected CACTUS time.*/
                  float Esi /*!Calibrated SiRi back energy in keV.*/);
  
@@ -186,16 +192,16 @@ bool UserXY::Command(const std::string& cmd)
  UserXY::UserXY():
     tnai_corr_enai ( GetParameters(), "tnai_corr_enai", 4   ),
     tnai_corr_esi  ( GetParameters(), "tnai_corr_esi", 4    ),
-    tppac_corr_esi ( GetParameters(), "tppac_corr_esi", 4   ),
     ex_from_ede    ( GetParameters(), "ex_from_ede", 8*3    ),
     ex_corr_exp    ( GetParameters(), "ex_corr_exp", 8*2    ),
     ede_rect       ( GetParameters(), "ede_rect", 4         ),
     thick_range    ( GetParameters(), "thick_range", 3      ),
-    nai_time_cuts  ( GetParameters(), "nai_time_cuts", 2*2  )
+    nai_time_cuts  ( GetParameters(), "nai_time_cuts", 2*2  ),
+    channel_PPAC   ( GetParameters(), "channel_PPAC", 4     )
 #if USE_FISSION_PARAMETERS>0
     , ppac_time_cuts ( GetParameters(), "ppac_time_cuts", 2*2 ),
-    fission_excitation_energy_min ( GetParameters(), "fission_excitation_energy_min", 1 ),
-    channel_PPAC   ( GetParameters(), "channel_PPAC", 4     )
+    tppac_corr_esi ( GetParameters(), "tppac_corr_esi", 4   ),
+    fission_excitation_energy_min ( GetParameters(), "fission_excitation_energy_min", 1 )
 #endif /* USE_FISSION_PARAMETERS */
  {
      ede_rect.Set( "500 250 30 500" );
@@ -265,7 +271,7 @@ bool UserXY::Command(const std::string& cmd)
      m_alfna_nofiss = Mat( "m_alfna_nofiss", "E(NaI) : E_{x} veto for fission",
                          2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
      m_alfna_bg =   Mat( "m_alfna_bg", "E(NaI) : E_{x} background",
-                   		 2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
+                         2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
      m_alfna_bg_fiss_promptFiss = Mat( "m_alfna_bg_fiss_promptFiss", "E(NaI) : E_{x} background with fission",
                    2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
      m_alfna_bg_nofiss = Mat( "m_alfna_bg_nofiss", "E(NaI) : E_{x} background without fission",
@@ -388,13 +394,16 @@ float UserXY::tNaI(float t, float Enai, float Esi)
      return t - c - d;
  }
  
+
 // ########################################################################
+#if USE_FISSION_PARAMETERS>0
 //Function to correct the time of the PPAC
 float UserXY::tPpac(float t, float Esi)
 {  
     const float a = tppac_corr_esi [0] + tppac_corr_esi [1]/(Esi +tppac_corr_esi [2]) + tppac_corr_esi [3]*Esi;
     return t - a;
 }
+#endif /* USE_FISSION_PARAMETERS */
 // ########################################################################
 //Function to give names to the various time cuts
 void UserXY::GiveNames ()
@@ -437,6 +446,7 @@ return NaIbgGate;
     bool PPACbgGate = floattime > PPACTimeCut.lower_bg && floattime < PPACTimeCut.higher_bg;
     return PPACbgGate;
     }
+ #endif /* USE_FISSION_PARAMETERS */
 // ########################################################################
 // Checks whether a channel is a PPAC channel
  bool UserXY::IsPPACChannel(int channel)
@@ -445,7 +455,6 @@ return NaIbgGate;
                        || channel == channel_PPAC[2] || channel == channel_PPAC[3];
     return PPACChannel;
     }
-#endif /* USE_FISSION_PARAMETERS */
 // ########################################################################
 
 
@@ -516,7 +525,7 @@ bool UserXY::Sort(const Event& event)
 */    
     
     // ......................................................//
-    // "MY" MODIFIED SORTING ROUTINE
+    // "MY" MODIFIED SORTING ROUTINE (<- Cecilie?)
     // GIVES MUCH LESS "PILE-UP" TO THE LEFT OF ELASTIC PEAK
     // ......................................................//
     
@@ -542,9 +551,9 @@ bool UserXY::Sort(const Event& event)
 //            return true;
         
         int id = event.e[i].chn;
-	
-	//bad strip
-	
+    
+    //bad strip
+    
         if( !(id&1) || id>= 16 )
             continue; // ignore guard rings. Guard rings in id 0,2,4,6,8,10,12,14, detectors in id 1,3,5,7,9,11,13,15
         
@@ -599,8 +608,8 @@ bool UserXY::Sort(const Event& event)
         const int id   = event.de[i].chn;
         //        std::cout << " Front ID fired: " << id << std::endl;
         if( id==29 ) //bad strip (id_b==3 && id_f==5) 
-	    continue; 
-	
+        continue; 
+    
         if(id<i_front_start || id>i_front_stop) // check id of front against the id of back - must match
             continue;
         
@@ -638,18 +647,21 @@ bool UserXY::Sort(const Event& event)
      const float e  = calib( si_e_raw[ei], gain_e[8*ei+dei], shift_e[8*ei+dei] );
      const int e_int = int(e), de_int = int(de);
 
+
 //****************************************************************************************************        
     // investigation for fission (SiRi)
 
+    // keep this outside the if defined statement, such that if no PPACs are used, all events are considered
+    // fiss = 0 -> by default, an event is not considered as a fission event; changed only if recognized in the for loop below
     int fiss = 0;
 
+#if USE_FISSION_PARAMETERS>0
      for( int j=0; j<event.n_na; j++ ) {
          
         const int ide = event.na[j].chn;
         
- //       if ( ide!=5 && ide!=13 && ide!=31 && ide!=32 )
         if ( !IsPPACChannel(ide) )
-        	 continue;
+             continue;
                     
         const float na_e_f = calib( (int)event.na[j].adc, gain_na[ide], shift_na[ide] );
         
@@ -662,8 +674,7 @@ bool UserXY::Sort(const Event& event)
         if ( CheckPPACpromptGate(ppac_t_c) &&  fission_excitation_energy_min[0] < e )   fiss = 1; // select fission blob in tPPAC vs E_SiRi gate
         if ( CheckPPACbgGate(ppac_t_c)     &&  fission_excitation_energy_min[0] < e )   fiss = 2; // added these to also see background fissions
     }
-
-
+ #endif /* USE_FISSION_PARAMETERS */
 //****************************************************************************************************        
     
 //****************************************************************************************************        
@@ -733,9 +744,9 @@ bool UserXY::Sort(const Event& event)
 
      for( int i=0; i<event.n_na; i++ ) {
          const int id = event.na[i].chn;
-	
+    
   //      if( id == 15 || id == 9)
-  //          continue;	
+  //          continue; 
 
           if( event.na[i].adc <= 0 )
              continue;
@@ -745,8 +756,6 @@ bool UserXY::Sort(const Event& event)
        const int   na_e_int = (int)na_e;
 
        m_nai_e->Fill( na_e_int, id );
-        
-       // fission signals in id 28, 29, 30, 31
  
        if( event.na[i].tdc <= 0 )
              continue;
@@ -756,27 +765,25 @@ bool UserXY::Sort(const Event& event)
          const int   na_t_int = (int)na_t;
         
          const int   na_t_c = (int)tNaI(na_t, na_e, e);
-       
-         //Gry har laget et ny "funksjon" UserXY::tPpac som leser inn NaI-tid og Siri-energi og bruker parameterene
-         //tppac_corr_esi til å korrigere tiden.
- 
+
+#if USE_FISSION_PARAMETERS>0
          const int   ppac_t_c = (int)tPpac(na_t,e);
+#endif /* USE_FISSION_PARAMETERS>0 */
 
          m_nai_t->Fill( na_t_int, id );
    
  #if defined(MAKE_CACTUS_TIME_ENERGY_PLOTS) && (MAKE_CACTUS_TIME_ENERGY_PLOTS>0)
-         //TODO: here one needs to define these differently, but an idfedine at a good place
-         // to ensure the the IsPPACChannel function is only called when we use ppacs (fission detectors)
-         // otherwise the program will get upset.
-          if ( !IsPPACChannel(id) && fiss==0) {   
-	        m_nai_e_t[id] ->Fill( na_e_int,  na_t_int );
+
+        if ( !IsPPACChannel(id) && fiss==0) {   
+            m_nai_e_t[id] ->Fill( na_e_int,  na_t_int );
             m_nai_e_t_all ->Fill( na_e_int,  na_t_int );
             m_nai_e_t_c   ->Fill( na_e_int,  na_t_c );
-     	    m_siri_e_t[ei]->Fill( e_int, na_t_int );
+            m_siri_e_t[ei]->Fill( e_int, na_t_int );
             m_siri_e_t_all->Fill( e_int, na_t_int );
             m_siri_e_t_c  ->Fill( e_int, na_t_c );
          }
         
+   #if USE_FISSION_PARAMETERS>0
         if ( !IsPPACChannel(id) && fiss==1) {   
         // m_nai_e_t_fiss[id] ->Fill( na_e_int,  na_t_int );
         m_nai_e_t_all_fiss_promptFiss ->Fill( na_e_int,  na_t_int );
@@ -789,20 +796,19 @@ bool UserXY::Sort(const Event& event)
         m_nai_e_t_c_fiss_bg   ->Fill( na_e_int,  na_t_c );
         }
 
-
-
         if ( IsPPACChannel(id) ) {  //(do for any PPAC)
         m_ppac_e_t[ei]->Fill( e_int, na_t_int );     // ppac are feeded in as a NaI signal, therefore we
         m_ppac_e_t_all->Fill( e_int, na_t_int ); // can use na_t_int as ppac times
         m_ppac_e_t_c->Fill( e_int, ppac_t_c );   // but here they should be corrected
         }
+   #endif /* USE_FISSION_PARAMETERS>0 */
        
 #endif /* MAKE_CACTUS_TIME_ENERGY_PLOTS */
 
         // ..................................................
        
-		/*** HERE COMES THE MAIN MATRIX FOR NaI ***/
-		int weight = 1;
+        /*** HERE COMES THE MAIN MATRIX FOR NaI ***/
+        int weight = 1;
 
         //Particle-gamma matrix all together
         if( !IsPPACChannel(id) && CheckNaIpromptGate(na_t_c) ) {
@@ -815,7 +821,7 @@ bool UserXY::Sort(const Event& event)
         }
         
 //***************************************************************************************************        
-     
+#if USE_FISSION_PARAMETERS>0
          //Particle-gamma matrix with veto for fission
         if( !IsPPACChannel(id) && fiss==0 && CheckNaIpromptGate(na_t_c) ) {
                  m_alfna_nofiss->Fill( na_e_int, ex_int, 1);
@@ -833,6 +839,7 @@ bool UserXY::Sort(const Event& event)
              m_alfna_fiss_promptFiss->Fill( na_e_int, ex_int, -1); // currently: "-1"-> Should be adopted to real efficiency!
              m_alfna_bg_fiss_promptFiss->Fill( na_e_int, ex_int );
          }
+#endif /* USE_FISSION_PARAMETERS>0 */         
  //****************************************************************************************************
     
         
