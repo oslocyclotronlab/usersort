@@ -74,7 +74,7 @@
     //m_nai_e er matrise med gammaenergi på x-aksen og NaI-detektornummer på y-aksen
      Histogram2Dp m_alfna, m_alfna_bg;
     //ALFNA og ALFNABAKGRUNN defineres
-     Histogram2Dp m_alfna_bg_nofiss, m_alfna_bg_fiss_promptFiss, m_alfna_fiss_promptFiss, m_alfna_nofiss;
+     Histogram2Dp m_alfna_bg_nofiss, m_alfna_fiss_promptFiss, m_alfna_fiss_bg, m_alfna_nofiss;
      Histogram1Dp h_na_n, h_thick, h_ede, h_ede_r[8], h_ex_r[8], h_de_n, h_e_n;
      Histogram1Dp h_ex, h_ex_fiss_promptFiss;
    
@@ -82,10 +82,13 @@
      Histogram2Dp m_nai_e_t[28], m_nai_e_t_all, m_nai_e_t_c,         // CACTUS_Time_Energy_Plots
                   m_siri_e_t[8], m_siri_e_t_all, m_siri_e_t_c,       // SIRI_Time_Energy_Plots
                   m_ppac_e_t[4], m_ppac_e_t_all, m_ppac_e_t_c;      // PPAC_Time_Energy_Plots
+     
      // for some reason needed, otherwise histograms in the following line are not ploted
-     Histogram2Dp m_test_histogram2D;               
+     Histogram2Dp m_dummy1,m_dummy2;
+
      Histogram2Dp m_nai_e_t_all_fiss_promptFiss, m_nai_e_t_c_fiss_promptFiss;
      Histogram2Dp m_nai_e_t_all_fiss_bg, m_nai_e_t_c_fiss_bg;
+
 #endif /* MAKE_CACTUS_TIME_ENERGY_PLOTS */      
 
  #if defined(MAKE_TIME_EVOLUTION_PLOTS) && (MAKE_TIME_EVOLUTION_PLOTS>0)
@@ -256,7 +259,7 @@ bool UserXY::Command(const std::string& cmd)
                          500, 0, max_e, "E(Si) [keV]", 500, 0, max_de, "#DeltaE(Si) [keV]" );
      m_e_de_fiss_bg = Mat( "m_e_de_fiss_bg", "#DeltaE : E in coincidence with fission, background",
                          500, 0, max_e, "E(Si) [keV]", 500, 0, max_de, "#DeltaE(Si) [keV]" );
-     m_e_de_fiss_promptFiss = Mat( "m_e_de_fiss_promptFiss", "#DeltaE : E in coincidence with fission, w/o bg",
+     m_e_de_fiss_promptFiss = Mat( "m_e_de_fiss_promptFiss", "#DeltaE : E in coincidence with fission, prompt gate",
                          500, 0, max_e, "E(Si) [keV]", 500, 0, max_de, "#DeltaE(Si) [keV]" );
      
      // [a.u.], becuase it's timing bins, not ns
@@ -266,16 +269,17 @@ bool UserXY::Command(const std::string& cmd)
 
      m_alfna =      Mat( "m_alfna", "E(NaI) : E_{x}",
                         2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
-     m_alfna_fiss_promptFiss = Mat( "m_alfna_fiss_promptFiss", "E(NaI) : E_{x} in coincidence with fission",
-                        2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
      m_alfna_nofiss = Mat( "m_alfna_nofiss", "E(NaI) : E_{x} veto for fission",
                          2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
      m_alfna_bg =   Mat( "m_alfna_bg", "E(NaI) : E_{x} background",
                          2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
-     m_alfna_bg_fiss_promptFiss = Mat( "m_alfna_bg_fiss_promptFiss", "E(NaI) : E_{x} background with fission",
-                   2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
      m_alfna_bg_nofiss = Mat( "m_alfna_bg_nofiss", "E(NaI) : E_{x} background without fission",
                       2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
+     m_alfna_fiss_promptFiss = Mat( "m_alfna_fiss_promptFiss", "E(NaI) : E_{x} in coincidence with prompt fission",
+                        2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
+     m_alfna_fiss_bg = Mat( "m_alfna_bg_fiss_promptFiss", "E(NaI) : E_{x} background with fission",
+                   2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
+    
      
      h_na_n = Spec("h_na_n", "NaI multiplicity", 32, 0, 32, "multiplicity");
    
@@ -525,7 +529,7 @@ bool UserXY::Sort(const Event& event)
 */    
     
     // ......................................................//
-    // "MY" MODIFIED SORTING ROUTINE (<- Cecilie?)
+    // ANN-CECILIE'S MODIFIED SORTING ROUTINE 
     // GIVES MUCH LESS "PILE-UP" TO THE LEFT OF ELASTIC PEAK
     // ......................................................//
     
@@ -808,36 +812,42 @@ bool UserXY::Sort(const Event& event)
         // ..................................................
        
         /*** HERE COMES THE MAIN MATRIX FOR NaI ***/
-        int weight = 1;
+        float weight = 1;
 
         //Particle-gamma matrix all together
         if( !IsPPACChannel(id) && CheckNaIpromptGate(na_t_c) ) {
-            m_alfna->Fill( na_e_int, ex_int, 1);
+            weight = 1;
+            m_alfna->Fill( na_e_int, ex_int, weight);
         } 
         else if( !IsPPACChannel(id) && CheckNaIbgGate(na_t_c) ) {
-            m_alfna->Fill( na_e_int, ex_int, -1); // currently: "-1"-> Should be adopted to real efficiency!
-            m_alfna_bg->Fill( na_e_int, ex_int );
-            weight = -1;   
+            weight = -1;
+            m_alfna->Fill( na_e_int, ex_int, weight);          // bg substraction from the random gate
+            m_alfna_bg->Fill( na_e_int, ex_int );   
         }
         
 //***************************************************************************************************        
 #if USE_FISSION_PARAMETERS>0
          //Particle-gamma matrix with veto for fission
         if( !IsPPACChannel(id) && fiss==0 && CheckNaIpromptGate(na_t_c) ) {
-                 m_alfna_nofiss->Fill( na_e_int, ex_int, 1);
+                 weight = 1;
+                 m_alfna_nofiss->Fill( na_e_int, ex_int, weight);
             } 
         else if( !IsPPACChannel(id) && fiss==0 && CheckNaIbgGate(na_t_c) ) {
-                 m_alfna_nofiss->Fill( na_e_int, ex_int, -1); // currently: "-1"-> Should be adopted to real efficiency!
+                 weight = -1;                                     // currently: "-1"-> Should be adopted to real efficiency!
+                 m_alfna_nofiss->Fill( na_e_int, ex_int, weight);
                  m_alfna_bg_nofiss->Fill( na_e_int, ex_int );
              }
  
          //Particle-gamma matrix only in case of fission
         if( !IsPPACChannel(id) && fiss==1 && CheckNaIpromptGate(na_t_c) ) {
-             m_alfna_fiss_promptFiss->Fill( na_e_int, ex_int, 1);
+             weight = 1;
+             m_alfna_fiss_promptFiss->Fill( na_e_int, ex_int, weight);
         } 
         else if( !IsPPACChannel(id)  && fiss==1 && CheckNaIbgGate(na_t_c) ) {
-             m_alfna_fiss_promptFiss->Fill( na_e_int, ex_int, -1); // currently: "-1"-> Should be adopted to real efficiency!
-             m_alfna_bg_fiss_promptFiss->Fill( na_e_int, ex_int );
+             weight = -1;                                         // bg substraction from the random gate
+             m_alfna_fiss_promptFiss->Fill( na_e_int, ex_int, -1);
+             //m_alfna_fiss->Fill( na_e_int, ex_int, -1);         // bg substraction from the random gate
+             m_alfna_fiss_bg->Fill( na_e_int, ex_int );
          }
 #endif /* USE_FISSION_PARAMETERS>0 */         
  //****************************************************************************************************
