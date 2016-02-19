@@ -95,8 +95,8 @@ parameter channel_PPAC = 4 12 30 31
 # time gates of the ppacs are found from the fission blob 
 # in the m_siri_e_t_ppac plot (fission blob in tPPAC vs E_SiRi gate)
 # - time gates from the y-axis, and energy from the x-axis
-# parameter = lower gate of ppac timing,            higher gate, 
-#             lower gate on ppac timing background, higher gate background
+# parameter = lower cut of prompt ,     higher gate of prompt peak,  \
+#             lower cut on backgr.,     higher cut backgr.
 # ### comment out this line(s) if no PPACs are used
 parameter ppac_time_cuts = 190 200 \
                            290 300
@@ -109,6 +109,9 @@ parameter ppac_time_cuts = 190 200 \
 # a higher energy than excitation_energy_min can be true fission events)
 # ### comment out this line(s) if no PPACs are used
 parameter fission_excitation_energy_min = 5000  # in keV
+
+# Total efficiency of the PPACs in 4Pi
+parameter ppac_efficiency = 0.48
 ############################################################################
 
 #data directory Datafiles

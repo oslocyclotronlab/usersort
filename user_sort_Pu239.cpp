@@ -74,7 +74,9 @@
     //m_nai_e er matrise med gammaenergi på x-aksen og NaI-detektornummer på y-aksen
      Histogram2Dp m_alfna, m_alfna_bg;
     //ALFNA og ALFNABAKGRUNN defineres
-     Histogram2Dp m_alfna_bg_nofiss, m_alfna_fiss_promptFiss, m_alfna_fiss_bg, m_alfna_nofiss;
+     Histogram2Dp m_alfna_nofiss,   m_alfna_fiss, m_alfna_fiss_promptFiss;
+     Histogram2Dp m_alfna_bg_nofiss,              m_alfna_bg_fiss_promptFiss, m_alfna_bg_fiss_bg;
+
      Histogram1Dp h_na_n, h_thick, h_ede, h_ede_r[8], h_ex_r[8], h_de_n, h_e_n;
      Histogram1Dp h_ex, h_ex_fiss_promptFiss;
    
@@ -82,10 +84,8 @@
      Histogram2Dp m_nai_e_t[28], m_nai_e_t_all, m_nai_e_t_c,         // CACTUS_Time_Energy_Plots
                   m_siri_e_t[8], m_siri_e_t_all, m_siri_e_t_c,       // SIRI_Time_Energy_Plots
                   m_ppac_e_t[4], m_ppac_e_t_all, m_ppac_e_t_c;      // PPAC_Time_Energy_Plots
-     
      // for some reason needed, otherwise histograms in the following line are not ploted
      Histogram2Dp m_dummy1,m_dummy2;
-
      Histogram2Dp m_nai_e_t_all_fiss_promptFiss, m_nai_e_t_c_fiss_promptFiss;
      Histogram2Dp m_nai_e_t_all_fiss_bg, m_nai_e_t_c_fiss_bg;
 
@@ -148,6 +148,9 @@
      
      //! Time gates for the ppacs.
      Parameter fission_excitation_energy_min;
+
+     //! Total efficiency of the PPACs in 4Pi
+     Parameter ppac_efficiency;
 #endif /* USE_FISSION_PARAMETERS */     
 
      //! Channel number of the PPACs
@@ -204,7 +207,8 @@ bool UserXY::Command(const std::string& cmd)
 #if USE_FISSION_PARAMETERS>0
     , ppac_time_cuts ( GetParameters(), "ppac_time_cuts", 2*2 ),
     tppac_corr_esi ( GetParameters(), "tppac_corr_esi", 4   ),
-    fission_excitation_energy_min ( GetParameters(), "fission_excitation_energy_min", 1 )
+    fission_excitation_energy_min ( GetParameters(), "fission_excitation_energy_min", 1 ),
+    ppac_efficiency ( GetParameters(), "ppac_efficiency", 1 )
 #endif /* USE_FISSION_PARAMETERS */
  {
      ede_rect.Set( "500 250 30 500" );
@@ -277,7 +281,11 @@ bool UserXY::Command(const std::string& cmd)
                       2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
      m_alfna_fiss_promptFiss = Mat( "m_alfna_fiss_promptFiss", "E(NaI) : E_{x} in coincidence with prompt fission",
                         2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
-     m_alfna_fiss_bg = Mat( "m_alfna_bg_fiss_promptFiss", "E(NaI) : E_{x} background with fission",
+     m_alfna_bg_fiss_promptFiss = Mat( "m_alfna_bg_fiss_promptFiss", "E(NaI) : E_{x} background with prompt fission",
+                   2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
+     m_alfna_bg_fiss_bg = Mat( "m_alfna_bg_fiss_bg", "E(NaI) : E_{x} background with fission background",
+                   2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
+     m_alfna_fiss = Mat( "m_alfna_fiss", "E(NaI) : E_{x} coincidence with fission",
                    2000, -2000, 14000, "E(NaI) [keV]", 2000, -2000, 14000, "E_{x} [keV]" );
     
      
@@ -341,7 +349,10 @@ bool UserXY::Command(const std::string& cmd)
                            500, 0, max_e, "E(Si) [keV]", 500, 0, 500, "t(NaI)" );
      m_siri_e_t_c   = Mat( "m_siri_e_t_c", "t(NaI) : E(Si) all detectors, corrected",
                            500, 0, max_e, "E(Si) [keV]", 500, 0, 500, "t(NaI) corr. [a.u.]" );
-
+     
+     // for some reason there is a segmentation fault during sorting when i reduce to n<4
+     // still, we only have 4 PPACs
+     // Error in the ioprintf?
      for(int n=0; n<8; ++n ) {
      m_ppac_e_t[n] = Mat( ioprintf("m_ppac_e_t_b%d", n), ioprintf("t(PPAC) : E(Si) detector %d", n),
                           500, 0, max_e, "E(Si) [keV]", 500, 0, 500, "t(PPAC) [a.u.]" );
@@ -838,16 +849,38 @@ bool UserXY::Sort(const Event& event)
                  m_alfna_bg_nofiss->Fill( na_e_int, ex_int );
              }
  
+
+         // the definition/filling of the "m_alfna_nofiss" should really be checked,
+         // this is only a first attempt!
+
          //Particle-gamma matrix only in case of fission
         if( !IsPPACChannel(id) && fiss==1 && CheckNaIpromptGate(na_t_c) ) {
              weight = 1;
              m_alfna_fiss_promptFiss->Fill( na_e_int, ex_int, weight);
+             m_alfna_fiss->Fill( na_e_int, ex_int, weight);
+
+             weight = - 1/ppac_efficiency[0];
+             m_alfna_nofiss->Fill( na_e_int, ex_int, weight);
         } 
         else if( !IsPPACChannel(id)  && fiss==1 && CheckNaIbgGate(na_t_c) ) {
              weight = -1;                                         // bg substraction from the random gate
-             m_alfna_fiss_promptFiss->Fill( na_e_int, ex_int, -1);
-             //m_alfna_fiss->Fill( na_e_int, ex_int, -1);         // bg substraction from the random gate
-             m_alfna_fiss_bg->Fill( na_e_int, ex_int );
+             m_alfna_bg_fiss_promptFiss->Fill( na_e_int, ex_int );
+
+             m_alfna_fiss_promptFiss->Fill( na_e_int, ex_int, weight);
+             m_alfna_fiss->Fill( na_e_int, ex_int, weight);         // bg substraction from the random gate
+             
+             weight = + 1/ppac_efficiency[0];
+             m_alfna_nofiss->Fill( na_e_int, ex_int, weight);
+         }
+        else if( !IsPPACChannel(id)  && fiss==2 && CheckNaIbgGate(na_t_c) ) {
+             weight = -1;                                         // bg substraction from the random gate
+             // m_alfna_fiss_promptFiss->Fill( na_e_int, ex_int, -1);
+             m_alfna_bg_fiss_bg->Fill( na_e_int, ex_int );
+
+             m_alfna_fiss->Fill( na_e_int, ex_int, weight);         // bg substraction from the random gate
+             
+             weight = + 1/ppac_efficiency[0];
+             m_alfna_nofiss->Fill( na_e_int, ex_int, weight);
          }
 #endif /* USE_FISSION_PARAMETERS>0 */         
  //****************************************************************************************************
