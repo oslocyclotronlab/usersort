@@ -1,0 +1,48 @@
+.depend-RootWriter.dep RootWriter.o: RootWriter.cpp RootWriter.h \
+ /usr/local/bin/root/include/TFile.h \
+ /usr/local/bin/root/include/TDirectoryFile.h \
+ /usr/local/bin/root/include/TDirectory.h \
+ /usr/local/bin/root/include/TNamed.h \
+ /usr/local/bin/root/include/TObject.h \
+ /usr/local/bin/root/include/Rtypes.h \
+ /usr/local/bin/root/include/RConfig.h \
+ /usr/local/bin/root/include/RVersion.h \
+ /usr/local/bin/root/include/DllImport.h \
+ /usr/local/bin/root/include/Rtypeinfo.h \
+ /usr/local/bin/root/include/snprintf.h \
+ /usr/local/bin/root/include/strlcpy.h \
+ /usr/local/bin/root/include/TGenericClassInfo.h \
+ /usr/local/bin/root/include/TSchemaHelper.h \
+ /usr/local/bin/root/include/TStorage.h \
+ /usr/local/bin/root/include/TVersionCheck.h \
+ /usr/local/bin/root/include/Riosfwd.h \
+ /usr/local/bin/root/include/TBuffer.h \
+ /usr/local/bin/root/include/TString.h \
+ /usr/local/bin/root/include/TMathBase.h \
+ /usr/local/bin/root/include/TList.h \
+ /usr/local/bin/root/include/TSeqCollection.h \
+ /usr/local/bin/root/include/TCollection.h \
+ /usr/local/bin/root/include/TIterator.h \
+ /usr/local/bin/root/include/TDatime.h \
+ /usr/local/bin/root/include/TUUID.h /usr/local/bin/root/include/TMap.h \
+ /usr/local/bin/root/include/THashTable.h \
+ /usr/local/bin/root/include/TUrl.h /usr/local/bin/root/include/TH1.h \
+ /usr/local/bin/root/include/TAxis.h \
+ /usr/local/bin/root/include/TAttAxis.h \
+ /usr/local/bin/root/include/TArrayD.h \
+ /usr/local/bin/root/include/TArray.h \
+ /usr/local/bin/root/include/TAttLine.h \
+ /usr/local/bin/root/include/TAttFill.h \
+ /usr/local/bin/root/include/TAttMarker.h \
+ /usr/local/bin/root/include/TArrayC.h \
+ /usr/local/bin/root/include/TArrayS.h \
+ /usr/local/bin/root/include/TArrayI.h \
+ /usr/local/bin/root/include/TArrayF.h \
+ /usr/local/bin/root/include/Foption.h \
+ /usr/local/bin/root/include/TVectorFfwd.h \
+ /usr/local/bin/root/include/TVectorDfwd.h \
+ /usr/local/bin/root/include/TFitResultPtr.h \
+ /usr/local/bin/root/include/TH2.h \
+ /usr/local/bin/root/include/TMatrixFBasefwd.h \
+ /usr/local/bin/root/include/TMatrixDBasefwd.h Histogram1D.h Histograms.h \
+ Histogram2D.h

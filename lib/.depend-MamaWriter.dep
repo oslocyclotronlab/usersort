@@ -1,0 +1,2 @@
+.depend-MamaWriter.dep MamaWriter.o: MamaWriter.cpp MamaWriter.h Histogram1D.h Histograms.h \
+ Histogram2D.h IOPrintf.h debug.h

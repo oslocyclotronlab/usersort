@@ -1,12 +1,17 @@
 # Ignore everything
-*
+/*
 
 # But not these files...
 !.gitignore
+!Makefile
 !user_sort*
 !*.batch
 !gainshift*
+!/lib
 # etc...
+
+# ignore orject files
+*.o
 
 # ...even if they are in subdirectories
 # !*/

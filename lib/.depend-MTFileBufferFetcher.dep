@@ -1,0 +1,3 @@
+.depend-MTFileBufferFetcher.dep MTFileBufferFetcher.o: MTFileBufferFetcher.cpp MTFileBufferFetcher.h \
+ aptr.h FileBufferFetcher.h BufferFetcher.h Buffer.h aptr.ipp \
+ FileReader.h debug.h

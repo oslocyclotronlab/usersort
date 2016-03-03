@@ -1,0 +1,4 @@
+.depend-OfflineSorting.dep OfflineSorting.o: OfflineSorting.cpp OfflineSorting.h RateMeter.h \
+ Unpacker.h Event.h aptr.h MTFileBufferFetcher.h FileBufferFetcher.h \
+ BufferFetcher.h Buffer.h RootWriter.h MamaWriter.h STFileBufferFetcher.h \
+ FileReader.h UserRoutine.h Histograms.h Parameters.h aptr.ipp debug.h
