@@ -18,7 +18,7 @@ parameter tnai_corr_esi  = 50.4471 -475514 4506.25 -0.00185164
 # The correction for the PPAC coutners are necessary due to SiRi, so
 # usually the same corrections parmeters as in tnai_corr_esi should be used
 # ### comment out this line(s) if no PPACs are used
-# parameter tnai_corr_enai = 0 1 0 0
+# parameter tppac_corr_esi = 0 1 0 0
 parameter tppac_corr_esi  =  50.4471 -475514 4506.25 -0.00185164
 ############################################################################
 
