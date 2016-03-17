@@ -70,7 +70,7 @@ static bool set_par(Parameters& parameters, std::istream& ipar,
     }
     p->Set( values );
 
-    return ipar;
+    return true;
 }
 
 static bool set_gainshift(Parameters& parameters, std::istream& ipar)
