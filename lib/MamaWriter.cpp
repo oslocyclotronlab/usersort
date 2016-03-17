@@ -35,7 +35,7 @@ static std::string datetime()
  *  \param cal      calibration coefficients
  */
 static void spectrum_write_header(std::ostream& fp, const std::string& comment,
-                                  int xdim, int ydim, float *cal)
+                                  int xdim, int ydim, Axis::bin_t *cal)
 {
     if(cal[0] + cal[1] + cal[2] == 0) {
         cal[0] = 0.;
@@ -75,7 +75,7 @@ static void spectrum_write_header(std::ostream& fp, const std::string& comment,
 int MamaWriter::Write(std::ofstream& fp, Histogram1D* h)
 {
     const Axis& xax = h->GetAxisX();
-    float cal[3] = { xax.GetLeft(), xax.GetBinWidth(), 0 };
+    Axis::bin_t cal[3] = { xax.GetLeft(), xax.GetBinWidth(), 0 };
     spectrum_write_header(fp, h->GetTitle(), xax.GetBinCount(), -1, cal);
     for(int i=0; i<xax.GetBinCount(); i++)
         fp << h->GetBinContent(i+1) << ' ';
@@ -89,7 +89,7 @@ int MamaWriter::Write(std::ofstream& fp, Histogram1D* h)
 int MamaWriter::Write(std::ofstream& fp, Histogram2D* h)
 {
     const Axis& xax = h->GetAxisX(), yax = h->GetAxisY();
-    float cal[6] = {
+    Axis::bin_t cal[6] = {
         xax.GetLeft(), xax.GetBinWidth(), 0,
         yax.GetLeft(), yax.GetBinWidth(), 0
     };
