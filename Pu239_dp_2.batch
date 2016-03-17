@@ -6,12 +6,12 @@ gain file gainshifts_013.dat
 
 
 # (constant fraction) cactus energy correction parameters for cactus time
-# parameter tnai_corr_enai = 0 1 0 0
-parameter tnai_corr_enai = -5.52368 18201.9 210.387 -0.00125989
+# parameter tnai_corr_enai = 0 1 0 0 // use these!
+parameter tnai_corr_enai = -5.52368 18201.9 210.387 -0.00125989 // comment out
 
 # (constant fraction) siri energy correction parameters for cactus time
-# parameter tnai_corr_esi  = 0 1 0 0
-parameter tnai_corr_esi  = 50.4471 -475514 4506.25 -0.00185164
+# parameter tnai_corr_esi  = 0 1 0 0  // use these!
+parameter tnai_corr_esi  = 50.4471 -475514 4506.25 -0.00185164 // comment out
 
 ################ Only when PPACs are used ##################################
 # (constant fraction) engery/time correction parameters for PPAC

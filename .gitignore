@@ -16,3 +16,4 @@
 
 # ...even if they are in subdirectories
 # !*/
+/lib/.DS_Store
