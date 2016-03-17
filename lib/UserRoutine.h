@@ -11,7 +11,7 @@
 #include "Parameters.h"
 #include <string>
 
-class Event;
+struct Event;
 
 //! Interface for sorting routines.
 class UserRoutine {

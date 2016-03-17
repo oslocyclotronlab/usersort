@@ -9,7 +9,7 @@
 #define UNPACKER_H_
 
 class Buffer;
-class Event;
+struct Event;
 
 //! Unpacks data from a Buffer into an Event.
 class Unpacker {
