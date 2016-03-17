@@ -7,7 +7,7 @@
 #include "aptr.h"
 
 template<typename T>
-void aptr<T>::reset(T* p=0)
+void aptr<T>::reset(T* p)
 {
     if (p!=ptr) {
         delete ptr;
