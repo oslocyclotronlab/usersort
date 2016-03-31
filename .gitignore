@@ -9,6 +9,7 @@
 !gainshift*
 !/lib
 !Readme.md
+!zrange*
 # etc...
 
 # ignore orject files
