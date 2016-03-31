@@ -13,6 +13,9 @@
 
 # ignore orject files
 *.o
+*.depend-*.dep
+*.a
+
 
 # ...even if they are in subdirectories
 # !*/
