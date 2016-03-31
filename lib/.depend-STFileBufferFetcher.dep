@@ -1,2 +1,0 @@
-.depend-STFileBufferFetcher.dep STFileBufferFetcher.o: STFileBufferFetcher.cpp STFileBufferFetcher.h \
- FileBufferFetcher.h BufferFetcher.h Buffer.h FileReader.h

@@ -1,1 +1,0 @@
-.depend-FileReader.dep FileReader.o: FileReader.cpp FileReader.h Buffer.h
