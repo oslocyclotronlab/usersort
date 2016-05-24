@@ -78,7 +78,7 @@
      Histogram2Dp m_alfna_bg_nofiss,              m_alfna_bg_fiss_promptFiss, m_alfna_bg_fiss_bg;
 
      Histogram1Dp h_na_n, h_thick, h_ede, h_ede_r[8], h_ex_r[8], h_de_n, h_e_n;
-     Histogram1Dp h_ex, h_ex_fiss_promptFiss;
+     Histogram1Dp h_ex, h_ex_nofiss, h_ex_fiss_promptFiss, h_ex_fiss_bg, h_ex_fiss;
    
  #if defined(MAKE_CACTUS_TIME_ENERGY_PLOTS) && (MAKE_CACTUS_TIME_ENERGY_PLOTS>0)
      Histogram2Dp m_nai_e_t[28], m_nai_e_t_all, m_nai_e_t_c,         // CACTUS_Time_Energy_Plots
@@ -309,7 +309,10 @@ bool UserXY::Command(const std::string& cmd)
 
      h_ede = Spec("h_ede", "E+#DeltaE all detectors", 2000, 0, max_e, "E+#DeltaE [keV]");
      h_ex  = Spec("h_ex", "E_{x} all detectors", 2000, -2000, 14000, "E_{x} [keV]");
+     h_ex_nofiss  = Spec("h_ex_nofiss", "E_{x} all detectors, veto for fission", 2000, -2000, 14000, "E_{x} [keV]");
      h_ex_fiss_promptFiss  = Spec("h_ex_fiss_promptFiss", "E_{x} all detectors, in coincidence with fission", 2000, -2000, 14000, "E_{x} [keV]");
+     h_ex_fiss_bg  = Spec("h_ex_fiss_bg", "E_{x} all detectors, in coincidence with fission background", 2000, -2000, 14000, "E_{x} [keV]");
+     h_ex_fiss = Spec("h_ex_fiss", "E_{x} all detectors, in coincidence with fission, bg substracted", 2000, -2000, 14000, "E_{x} [keV]");
 
  #if defined(MAKE_CACTUS_TIME_ENERGY_PLOTS) && (MAKE_CACTUS_TIME_ENERGY_PLOTS>0)
      // maximum energy of the gammadetectors (x axis) is 12000 keV
@@ -566,9 +569,9 @@ bool UserXY::Sort(const Event& event)
 //            return true;
         
         int id = event.e[i].chn;
-    
-    //bad strip
-    
+	
+	//bad strip
+	
         if( !(id&1) || id>= 16 )
             continue; // ignore guard rings. Guard rings in id 0,2,4,6,8,10,12,14, detectors in id 1,3,5,7,9,11,13,15
         
@@ -741,10 +744,21 @@ bool UserXY::Sort(const Event& event)
      h_ex->Fill( ex_int );
      h_ex_r[dei]->Fill( ex_int );
      
-     //particle spectrum in coinicidence with fission
-     if (fiss==1) {
-     h_ex_fiss_promptFiss->Fill( ex_int );
-     }
+
+     //particle spectrum with veto for fission
+     if( fiss==0 ) {h_ex_nofiss->Fill( ex_int );}
+     
+     //particle spectrum only in case of fission
+     if( fiss==1 ) {
+        h_ex_fiss_promptFiss->Fill( ex_int );
+        h_ex_fiss->Fill( ex_int,1 );       
+        }
+
+     //particle spectrum only in case of fission; background
+     if( fiss==2 ) {
+        h_ex_fiss_bg->Fill( ex_int );
+        h_ex_fiss->Fill( ex_int,-1 ); // wheight: -1 -> bg is substracted
+        }
      
      // ..................................................
  
