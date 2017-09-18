@@ -625,8 +625,8 @@ bool UserXY::Sort(const Event& event)
       
         const int id   = event.de[i].chn;
         //        std::cout << " Front ID fired: " << id << std::endl;
-        if( id==29 ) //bad strip (id_b==3 && id_f==5) 
-        continue; 
+        // if( id==29 ) //bad strip (id_b==3 && id_f==5) 
+        // continue; 
     
         if(id<i_front_start || id>i_front_stop) // check id of front against the id of back - must match
             continue;
