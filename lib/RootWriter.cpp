@@ -42,7 +42,8 @@ TH1p RootWriter::CreateTH1(Histogram1D* h)
     rxax->SetLabelSize(0.03);
 
     TAxis* ryax = r->GetYaxis();
-    ryax->SetLabelSize(0.03);
+    if (ryax)
+      ryax->SetLabelSize(0.03);
 
     for(int i=0; i<channels+2; ++i)
         r->SetBinContent(i, h->GetBinContent(i));
