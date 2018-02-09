@@ -76,7 +76,8 @@ install:
 
 sorting: $(OBJS) $(LIBSORTING)
 	@$(SHOW) $(CXXLMSG) $@
-	$H $(CXX) $(LIBS) $^ -o $@
+	$H $(CXX) -o $@ $^ $(LIBS)
+
 
 $(LIBSORTING):
 	make -C $(shell dirname $@) $(shell basename $@)
