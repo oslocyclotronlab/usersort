@@ -56,6 +56,7 @@
      bool CheckPPACbgGate (float);
 #endif /* USE_FISSION_PARAMETERS */
      bool IsPPACChannel (int);
+     int GetPPACChannel (int);
 
 
      
@@ -356,7 +357,7 @@ bool UserXY::Command(const std::string& cmd)
      // for some reason there is a segmentation fault during sorting when i reduce to n<4
      // still, we only have 4 PPACs
      // Error in the ioprintf?
-     for(int n=0; n<8; ++n ) {
+     for(int n=0; n<4; ++n ) {
      m_ppac_e_t[n] = Mat( ioprintf("m_ppac_e_t_b%d", n), ioprintf("t(PPAC) : E(Si) detector %d", n),
                           500, 0, max_e, "E(Si) [keV]", 500, 0, 500, "t(PPAC) [a.u.]" );
      }
@@ -472,6 +473,16 @@ return NaIbgGate;
     bool PPACChannel =    channel == channel_PPAC[0] || channel == channel_PPAC[1] 
                        || channel == channel_PPAC[2] || channel == channel_PPAC[3];
     return PPACChannel;
+    }
+
+// Get which PPAC channel
+ int UserXY::GetPPACChannel(int nai_channel)
+    {
+        for (int i = 0 ; i < 4 ; ++i)
+            if (nai_channel == channel_PPAC[i])
+                return i;
+        std::cerr << "NaI-channel  " << nai_channel << "is NOT a PPAC!!!" << std::endl;
+        return -1;
     }
 // ########################################################################
 
@@ -826,7 +837,7 @@ bool UserXY::Sort(const Event& event)
         }
 
         if ( IsPPACChannel(id) ) {  //(do for any PPAC)
-        m_ppac_e_t[ei]->Fill( e_int, na_t_int );     // ppac are feeded in as a NaI signal, therefore we
+        m_ppac_e_t[GetPPACChannel(id)]->Fill( e_int, na_t_int );     // ppac are feeded in as a NaI signal, therefore we
         m_ppac_e_t_all->Fill( e_int, na_t_int ); // can use na_t_int as ppac times
         m_ppac_e_t_c->Fill( e_int, ppac_t_c );   // but here they should be corrected
         }
