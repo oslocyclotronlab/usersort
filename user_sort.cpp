@@ -745,7 +745,7 @@ bool UserXY::Sort(const Event& event)
  #endif /* MAKE_INDIVIDUAL_E_DE_PLOTS */
    
      // fit of kinz Ex(E+DE)
-     const float ex_theo = ex_from_ede[3*dei+0] + (ede)*(ex_from_ede[3*dei+1] + (ede)*ex_from_ede[3*dei+2]);
+     const float ex_theo = ex_from_ede[3*dei+0] + (ede)*(ex_from_ede[3*dei+1] + (ede*ede)*ex_from_ede[3*dei+2]);
      //const float ex_theo = ex_from_ede.Poly(ede, 3*dei, 3);
 
      // make experimental corrections
