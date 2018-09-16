@@ -116,7 +116,7 @@ parameter channel_PPAC = 4 12 30 31
 
 #data directory Datafiles
 # data directory /path/to/data_dir
-data directory /Users/frida/usersort
+data directory /Users/frida/Uni/Master/sorting/usersort
 #maximum number of buffers to read for each file; for testing
 #max_buffers 1
 
